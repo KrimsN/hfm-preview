@@ -144,4 +144,3 @@ export function typographyFix(code: string, text: string): string | undefined {
   }
 }
 
-export const FIXABLE_TYPOGRAPHY = new Set(["dash-hyphen", "dash-range", "number-unit", "number-thousands", "ordinal-ending", "quotes-latin"]);
