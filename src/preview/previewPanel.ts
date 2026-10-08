@@ -244,17 +244,22 @@ export class PreviewSerializer implements vscode.WebviewPanelSerializer {
   constructor(
     private readonly context: vscode.ExtensionContext,
     private readonly parser: HfmParser,
+    private readonly log: vscode.LogOutputChannel,
   ) {}
 
   async deserializeWebviewPanel(panel: vscode.WebviewPanel, state: { uri?: string } | undefined): Promise<void> {
+    this.log.info(`восстановление панели «${panel.title}», состояние: ${JSON.stringify(state)}`);
     if (!state?.uri) {
+      this.log.warn("в состоянии нет адреса документа, вкладка закрыта");
       panel.dispose();
       return;
     }
     try {
       const document = await vscode.workspace.openTextDocument(vscode.Uri.parse(state.uri));
       PreviewPanel.restore(this.context, this.parser, document, panel);
-    } catch {
+      this.log.info(`панель восстановлена: ${state.uri}`);
+    } catch (error) {
+      this.log.error(`не удалось восстановить панель: ${String(error)}`);
       // файл удалён или недоступен — закрываем вкладку, а не оставляем пустую
       panel.dispose();
     }

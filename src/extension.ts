@@ -9,6 +9,9 @@ const HFM_LANGUAGE_ID = "hfm";
 
 export function activate(context: vscode.ExtensionContext): void {
   const parser = createParser();
+  const log = vscode.window.createOutputChannel("HFM", { log: true });
+  context.subscriptions.push(log);
+  log.info(`активация, режим ${vscode.ExtensionMode[context.extensionMode]}`);
   watchForRebuild(context);
 
   const open = (column: vscode.ViewColumn) => () => {
@@ -21,7 +24,7 @@ export function activate(context: vscode.ExtensionContext): void {
   };
 
   context.subscriptions.push(
-    vscode.window.registerWebviewPanelSerializer(VIEW_TYPE, new PreviewSerializer(context, parser)),
+    vscode.window.registerWebviewPanelSerializer(VIEW_TYPE, new PreviewSerializer(context, parser, log)),
     new HfmDiagnostics(HFM_LANGUAGE_ID),
     vscode.languages.registerCodeActionsProvider({ language: HFM_LANGUAGE_ID }, new HfmCodeActions(), HfmCodeActions.metadata),
     vscode.languages.registerDocumentSymbolProvider(
