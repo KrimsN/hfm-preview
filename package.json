@@ -93,7 +93,8 @@
     "watch": "node esbuild.mjs --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "vscode:prepublish": "node esbuild.mjs --production"
+    "vscode:prepublish": "node esbuild.mjs --production",
+    "package": "vsce package --allow-missing-repository --skip-license"
   },
   "dependencies": {
     "@codemirror/lang-cpp": "^6.0.3",
@@ -120,8 +121,15 @@
     "@types/markdown-it": "^14.2.0",
     "@types/node": "^26.6.4",
     "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "^4.0.0",
     "esbuild": "^0.28.2",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3"
-  }
+  },
+  "files": [
+    "dist/extension.js",
+    "media",
+    "syntaxes",
+    "language-configuration.json"
+  ]
 }
