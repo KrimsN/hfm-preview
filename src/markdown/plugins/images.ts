@@ -1,13 +1,14 @@
 import type { CoreState, Token } from "../types";
 import type { HfmParser } from "../createParser";
+import { type HfmEnv, resolveImageSrc } from "../env";
 
 /**
  * Картинка на Хабре всегда блок `figure`: подпись — `title`, иначе `alt`.
  * Картинка внутри абзаца разрывает его, ссылка вокруг картинки теряется.
  */
 export function imagesPlugin(md: HfmParser): void {
-  const figureHtml = (image: Token): string => {
-    const src = md.utils.escapeHtml(String(image.attrGet("src") ?? ""));
+  const figureHtml = (image: Token, env: HfmEnv): string => {
+    const src = md.utils.escapeHtml(resolveImageSrc(env, String(image.attrGet("src") ?? "")));
     const alt = md.utils.escapeHtml(image.content);
     const caption = md.utils.escapeHtml(String(image.attrGet("title") || image.content));
     const figcaption = caption ? `<figcaption>${caption}</figcaption>` : "";
@@ -31,7 +32,7 @@ export function imagesPlugin(md: HfmParser): void {
         continue;
       }
 
-      result.push(...splitParagraph(state, token, inline, figureHtml));
+      result.push(...splitParagraph(state, token, inline, (image) => figureHtml(image, state.env as HfmEnv)));
       i += 2; // inline и paragraph_close
     }
     state.tokens = result;

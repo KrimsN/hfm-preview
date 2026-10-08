@@ -1,5 +1,6 @@
 import type { HfmParser } from "../createParser";
 import type { Token } from "../types";
+import { type HfmEnv, resolveImageSrc } from "../env";
 
 /**
  * `<persona>`: картинка, заголовок `#####` с именем и абзац со специальностью
@@ -34,7 +35,7 @@ export function personaPlugin(md: HfmParser): void {
       html.meta = { generated: true };
       html.content =
         `<div class="persona">` +
-        (image ? `<img class="image persona__image" src="${esc(String(image.attrGet("src") ?? ""))}">` : "") +
+        (image ? `<img class="image persona__image" src="${esc(resolveImageSrc(state.env as HfmEnv, String(image.attrGet("src") ?? "")))}">` : "") +
         `<h5 class="persona__heading">${esc(name)}</h5>` +
         `<p class="persona__text">${esc(rest?.content ?? "")}</p></div>\n`;
       result.push(html);

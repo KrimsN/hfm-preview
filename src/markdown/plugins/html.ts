@@ -1,4 +1,5 @@
 import type { HfmParser } from "../createParser";
+import { type HfmEnv, resolveImageSrc } from "../env";
 import { embedHtml, iframeToUrl } from "./embeds";
 
 const COMMENT = /<!--[\s\S]*?-->/g;
@@ -23,7 +24,7 @@ function attr(attrs: string, name: string): string | undefined {
  * Приводит произвольный HTML к модели документа Хабра (HFM_SPEC.md, «Произвольный HTML»):
  * `<span>`, `<mark>`, `<kbd>`, `<small>` и атрибуты `style`/`align` пропадают, текст остаётся.
  */
-export function cleanHtml(md: HfmParser, html: string, block: boolean): string {
+export function cleanHtml(md: HfmParser, html: string, block: boolean, env?: HfmEnv): string {
   const esc = md.utils.escapeHtml;
 
   return html.replace(COMMENT, "").replace(TAG, (whole, slash: string, rawName: string, attrs: string) => {
@@ -61,7 +62,7 @@ export function cleanHtml(md: HfmParser, html: string, block: boolean): string {
       }
       const alt = esc(attr(attrs, "alt") ?? "");
       const width = attr(attrs, "width");
-      const img = `<img src="${esc(src)}" alt="${alt}"${width ? ` width="${esc(width)}"` : ""}>`;
+      const img = `<img src="${esc(resolveImageSrc(env, src))}" alt="${alt}"${width ? ` width="${esc(width)}"` : ""}>`;
       return block ? `<figure class="full-width">${img}${alt ? `<figcaption>${alt}</figcaption>` : ""}</figure>` : img;
     }
     if (name === "iframe") {
@@ -79,12 +80,12 @@ export function htmlPlugin(md: HfmParser): void {
     for (const token of state.tokens) {
       if (token.meta?.generated) continue;
       if (token.type === "html_block") {
-        const cleaned = cleanHtml(md, token.content, true);
+        const cleaned = cleanHtml(md, token.content, true, state.env as HfmEnv);
         token.content = cleaned.trim() === "" ? "" : cleaned;
       } else if (token.type === "inline") {
         for (const child of token.children ?? []) {
           if (child.type === "html_inline" && !child.meta?.generated) {
-            child.content = cleanHtml(md, child.content, false);
+            child.content = cleanHtml(md, child.content, false, state.env as HfmEnv);
           }
         }
       }

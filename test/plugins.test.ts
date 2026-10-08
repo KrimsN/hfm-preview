@@ -217,3 +217,21 @@ describe("html", () => {
     expect(md.render('<spoiler title="a">\n\nx\n\n</spoiler>\n')).toContain('<div class="spoiler__content">');
   });
 });
+
+describe("resolveImage", () => {
+  const env = { resolveImage: (src: string) => `vscode-webview://x/${src}` };
+
+  it("подменяет только относительные пути", () => {
+    expect(md.render("![](./a.png)", env)).toContain('src="vscode-webview://x/./a.png"');
+    expect(md.render("![](https://a.b/c.png)", env)).toContain('src="https://a.b/c.png"');
+    expect(md.render("![](//a.b/c.png)", env)).toContain('src="//a.b/c.png"');
+  });
+
+  it("работает и для HTML-картинок", () => {
+    expect(md.render('<img src="a.png" alt="x">', env)).toContain('src="vscode-webview://x/a.png"');
+  });
+
+  it("без env оставляет путь как есть", () => {
+    expect(md.render("![](./a.png)")).toContain('src="./a.png"');
+  });
+});
