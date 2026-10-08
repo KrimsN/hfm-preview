@@ -1,11 +1,16 @@
 import type { HfmParser } from "../createParser";
+import { highlightCode } from "../highlight";
 import { resolveLanguage } from "../languages";
 
-/** Класс языка получают только имена из списка Хабра; остальное — блок без подсветки. */
+/**
+ * Класс языка получают только имена из списка Хабра; остальное — блок без подсветки.
+ * Токены размечаются так же, как это делает Хабр (CodeMirror 6 / Lezer).
+ */
 export function codePlugin(md: HfmParser): void {
   const render = (content: string, language?: string): string => {
     const cls = language ? ` class="${language}"` : "";
-    return `<pre><code${cls}>${md.utils.escapeHtml(content)}</code></pre>\n`;
+    const body = (language && highlightCode(content, language, md.utils.escapeHtml)) || md.utils.escapeHtml(content);
+    return `<pre><code${cls}>${body}</code></pre>\n`;
   };
 
   md.renderer.rules.fence = (tokens, idx) => {

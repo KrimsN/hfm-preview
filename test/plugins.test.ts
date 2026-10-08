@@ -105,13 +105,13 @@ describe("mentions", () => {
 
 describe("code", () => {
   it("ставит класс только для языков из списка", () => {
-    expect(md.render("```python\nx\n```")).toBe('<pre><code class="python">x\n</code></pre>\n');
+    expect(md.render("```python\nx\n```")).toContain('<code class="python">');
     expect(md.render("```js\nx\n```")).toBe("<pre><code>x\n</code></pre>\n");
     expect(md.render("```unknown\nx\n```")).toBe("<pre><code>x\n</code></pre>\n");
   });
 
   it("экранирует содержимое", () => {
-    expect(md.render("```xml\n<a>\n```")).toContain("&lt;a&gt;");
+    expect(md.render("```xml\n<a>\n```")).not.toContain("<a>");
   });
 });
 
@@ -233,5 +233,27 @@ describe("resolveImage", () => {
 
   it("без env оставляет путь как есть", () => {
     expect(md.render("![](./a.png)")).toContain('src="./a.png"');
+  });
+});
+
+describe("подсветка кода", () => {
+  it("размечает токены по ролям", () => {
+    const html = md.render('```rust\nlet x = "s"; println!("a");\n```');
+    expect(html).toContain('<span class="hl-kw">let</span>');
+    expect(html).toContain('<span class="hl-str">&quot;s&quot;</span>');
+    expect(html).toContain('<span class="hl-macro">println!</span>');
+  });
+
+  it("подсвечивает языки на legacy-режимах", () => {
+    expect(md.render("```bash\necho hi # c\n```")).toContain('class="hl-comment"');
+  });
+
+  it("не подсвечивает язык вне списка Хабра и язык без парсера", () => {
+    expect(md.render("```js\nconst a = 1;\n```")).not.toContain("<span");
+    expect(md.render("```1c\nСообщить(1);\n```")).not.toContain("<span");
+  });
+
+  it("экранирует HTML внутри подсвеченного кода", () => {
+    expect(md.render("```xml\n<a b='1'/>\n```")).not.toContain("<a b");
   });
 });

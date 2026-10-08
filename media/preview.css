@@ -249,3 +249,26 @@ body.vscode-high-contrast img.formula { filter: invert(0.87); background: none; 
   color: var(--habr-muted);
 }
 .habr-article .anchor { display: block; }
+
+/*
+ * Подсветка кода. Цвета ключевых слов, имён, строк, макросов и литералов сняты со статьи на Rust;
+ * цвет комментариев и имён тегов в выборке не встретился — подобран по аналогии (HFM_SPEC.md).
+ */
+body, body.vscode-light, body.vscode-high-contrast-light {
+  --habr-hl-kw: rgb(137, 89, 168);
+  --habr-hl-name: rgb(57, 114, 142);
+  --habr-hl-str: rgb(123, 168, 0);
+  --habr-hl-lit: rgb(245, 125, 5);
+}
+body.vscode-dark, body.vscode-high-contrast {
+  --habr-hl-kw: rgb(137, 89, 168);
+  --habr-hl-name: rgb(128, 215, 255);
+  --habr-hl-str: rgb(131, 179, 0);
+  --habr-hl-lit: rgb(255, 161, 66);
+}
+.habr-article .hl-kw { color: var(--habr-hl-kw); font-weight: 700; }
+.habr-article .hl-name { color: var(--habr-hl-name); }
+.habr-article .hl-str { color: var(--habr-hl-str); }
+.habr-article .hl-lit { color: var(--habr-hl-lit); }
+.habr-article .hl-macro,
+.habr-article .hl-comment { color: var(--habr-muted); }
