@@ -1,0 +1,94 @@
+{
+  "link-relative": {
+    "severity": "error",
+    "message": "Ссылка «{href}» без схемы: Хабр добавит https:// и она сломается. Используйте полный URL."
+  },
+  "image-relative": {
+    "severity": "error",
+    "message": "Путь к картинке «{src}» без схемы: на Хабре он превратится в https://… и картинка не загрузится. Нужна ссылка на habrastorage или другой полный URL."
+  },
+  "image-external": {
+    "severity": "warning",
+    "message": "Картинка не с habrastorage.org. Хабр может не перезалить внешнюю картинку — загрузите её на habrastorage."
+  },
+  "anchor-missing": {
+    "severity": "error",
+    "message": "Нет якоря «{name}». У заголовков на Хабре нет id, ссылка #{name} не сработает — добавьте <anchor>{name}</anchor>."
+  },
+  "inline-image-external": {
+    "severity": "error",
+    "message": "<img inline> с внешним src Хабр выбрасывает целиком. Допустима только картинка с habrastorage.org."
+  },
+  "footnote": {
+    "severity": "warning",
+    "message": "Сноски на Хабре не поддерживаются, текст останется как есть."
+  },
+  "task-list": {
+    "severity": "warning",
+    "message": "Список задач не поддерживается: «[ ]» и «[x]» останутся текстом."
+  },
+  "quote-nested": {
+    "severity": "warning",
+    "message": "Вложенные цитаты Хабр расплющивает в абзацы внешней цитаты."
+  },
+  "quote-code": {
+    "severity": "warning",
+    "message": "Блок кода в цитате превратится в inline-код внутри абзаца."
+  },
+  "quote-heading": {
+    "severity": "warning",
+    "message": "Заголовок в цитате превратится в обычный абзац."
+  },
+  "heading-level": {
+    "severity": "warning",
+    "message": "Заголовки уровней 4–6 Хабр превращает в заголовок третьего уровня (h3)."
+  },
+  "heading-formatting": {
+    "severity": "warning",
+    "message": "В заголовке пропадут ссылки, код и форматирование — останется только текст."
+  },
+  "table-align": {
+    "severity": "warning",
+    "message": "Выравнивание колонок таблицы Хабр игнорирует, всё будет по левому краю."
+  },
+  "image-in-paragraph": {
+    "severity": "information",
+    "message": "Картинка внутри абзаца разорвёт его на две части: Хабр выводит картинку отдельным блоком."
+  },
+  "image-link": {
+    "severity": "warning",
+    "message": "Ссылка вокруг картинки потеряется, останется только картинка."
+  },
+  "link-title": {
+    "severity": "information",
+    "message": "Подсказка (title) у ссылки Хабр выбрасывает."
+  },
+  "code-language-unknown": {
+    "severity": "warning",
+    "message": "Язык «{lang}» Хабр не знает: блок кода будет без подсветки."
+  },
+  "code-language-synonym": {
+    "severity": "warning",
+    "message": "Хабр не понимает «{lang}», блок будет без подсветки. Используйте «{suggestion}»."
+  },
+  "html-dropped": {
+    "severity": "warning",
+    "message": "Тег <{tag}> Хабр выбрасывает, останется только его текст."
+  },
+  "html-attr-dropped": {
+    "severity": "warning",
+    "message": "Атрибут {attr} Хабр выбрасывает."
+  },
+  "emoji-shortcode": {
+    "severity": "information",
+    "message": "Эмодзи-шорткоды не поддерживаются, «{code}» останется текстом. Вставьте сам символ."
+  },
+  "strike-single-tilde": {
+    "severity": "warning",
+    "message": "Зачёркивание работает только с двумя тильдами: ~~текст~~."
+  },
+  "typographic-quotes": {
+    "severity": "hint",
+    "message": "Прямые кавычки Хабр заменит на английские “…”. Для русского текста лучше сразу писать «…»."
+  }
+}

@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { createParser } from "./markdown/createParser";
+import { HfmCodeActions, HfmDiagnostics } from "./diagnostics/provider";
 import { HfmSymbolProvider } from "./outline/symbolProvider";
 import { PreviewPanel } from "./preview/previewPanel";
 
@@ -18,6 +19,8 @@ export function activate(context: vscode.ExtensionContext): void {
   };
 
   context.subscriptions.push(
+    new HfmDiagnostics(HFM_LANGUAGE_ID),
+    vscode.languages.registerCodeActionsProvider({ language: HFM_LANGUAGE_ID }, new HfmCodeActions(), HfmCodeActions.metadata),
     vscode.languages.registerDocumentSymbolProvider(
       { language: HFM_LANGUAGE_ID },
       new HfmSymbolProvider(),

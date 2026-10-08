@@ -76,7 +76,17 @@
         "mac": "cmd+k v",
         "when": "editorLangId == hfm"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Markdown Preview for Habr",
+      "properties": {
+        "hfm.diagnostics.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Показывать предупреждения о конструкциях, которые Хабр не поддерживает или ломает."
+        }
+      }
+    }
   },
   "scripts": {
     "build": "node esbuild.mjs",
