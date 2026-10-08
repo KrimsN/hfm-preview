@@ -218,7 +218,7 @@
   "devDependencies": {
     "@types/markdown-it": "^14.2.0",
     "@types/node": "^26.6.4",
-    "@types/vscode": "^1.90.0",
+    "@types/vscode": "^1.140.0",
     "@vscode/vsce": "^4.0.0",
     "esbuild": "^0.28.2",
     "typescript": "^7.0.2",
