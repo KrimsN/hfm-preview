@@ -1,8 +1,12 @@
+export type PreviewTheme = "auto" | "light" | "dark";
+
 export interface WebviewHtmlOptions {
   cspSource: string;
   nonce: string;
   styleUri: string;
   scriptUri: string;
+  /** `light` или `dark`; `auto` — тема VS Code */
+  theme: PreviewTheme;
   /** Уже отрендеренное тело статьи */
   body: string;
 }
@@ -24,7 +28,7 @@ export function buildWebviewHtml(o: WebviewHtmlOptions): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="${o.styleUri}">
 </head>
-<body>
+<body${o.theme === "auto" ? "" : ` data-theme="${o.theme}"`}>
   <article id="content" class="habr-article">${o.body}</article>
   <script nonce="${o.nonce}" src="${o.scriptUri}"></script>
 </body>

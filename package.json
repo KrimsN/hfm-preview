@@ -84,6 +84,21 @@
           "type": "boolean",
           "default": true,
           "description": "Показывать предупреждения о конструкциях, которые Хабр не поддерживает или ломает."
+        },
+        "hfm.preview.theme": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "light",
+            "dark"
+          ],
+          "enumDescriptions": [
+            "Как у VS Code",
+            "Светлая, как на Хабре",
+            "Тёмная, как на Хабре"
+          ],
+          "default": "auto",
+          "description": "Тема превью статьи."
         }
       }
     }

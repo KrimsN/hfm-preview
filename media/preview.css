@@ -3,9 +3,7 @@
  * сам CSS Хабра не копируется. Источник: research/HFM_SPEC.md, разделы «CSS» и «Палитра».
  */
 
-:root,
-body.vscode-light,
-body.vscode-high-contrast-light {
+:root {
   --habr-bg: rgb(255, 255, 255);
   --habr-text: rgb(51, 51, 51);
   --habr-accent: rgb(84, 142, 171);
@@ -18,8 +16,9 @@ body.vscode-high-contrast-light {
   --habr-hidden: rgb(188, 206, 215);
 }
 
-body.vscode-dark,
-body.vscode-high-contrast {
+body[data-theme="dark"],
+body:not([data-theme]).vscode-dark,
+body:not([data-theme]).vscode-high-contrast {
   --habr-bg: rgb(23, 23, 23);
   --habr-text: rgb(222, 222, 222);
   --habr-accent: rgb(76, 182, 235);
@@ -190,8 +189,9 @@ body {
 .habr-article img.formula:not(.inline) { display: block; margin: 52px auto; }
 
 /* SVG формул рисуется чёрным; в тёмной теме инвертируем */
-body.vscode-dark img.formula,
-body.vscode-high-contrast img.formula { filter: invert(0.87); background: none; }
+body[data-theme="dark"] img.formula,
+body:not([data-theme]).vscode-dark img.formula,
+body:not([data-theme]).vscode-high-contrast img.formula { filter: invert(0.87); background: none; }
 .habr-article code.formula-error { color: #c0392b; }
 
 /* Персона */
@@ -254,13 +254,15 @@ body.vscode-high-contrast img.formula { filter: invert(0.87); background: none; 
  * Подсветка кода. Цвета ключевых слов, имён, строк, макросов и литералов сняты со статьи на Rust;
  * цвет комментариев и имён тегов в выборке не встретился — подобран по аналогии (HFM_SPEC.md).
  */
-body, body.vscode-light, body.vscode-high-contrast-light {
+:root {
   --habr-hl-kw: rgb(137, 89, 168);
   --habr-hl-name: rgb(57, 114, 142);
   --habr-hl-str: rgb(123, 168, 0);
   --habr-hl-lit: rgb(245, 125, 5);
 }
-body.vscode-dark, body.vscode-high-contrast {
+body[data-theme="dark"],
+body:not([data-theme]).vscode-dark,
+body:not([data-theme]).vscode-high-contrast {
   --habr-hl-kw: rgb(137, 89, 168);
   --habr-hl-name: rgb(128, 215, 255);
   --habr-hl-str: rgb(131, 179, 0);

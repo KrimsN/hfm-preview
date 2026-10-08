@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import * as vscode from "vscode";
 import type { HfmParser } from "../markdown/createParser";
 import type { HfmEnv } from "../markdown/env";
-import { buildWebviewHtml } from "./webviewHtml";
+import { buildWebviewHtml, type PreviewTheme } from "./webviewHtml";
 
 const VIEW_TYPE = "hfm.preview";
 const UPDATE_DEBOUNCE_MS = 150;
@@ -58,6 +58,11 @@ export class PreviewPanel {
           this.scheduleUpdate();
         }
       }),
+      vscode.workspace.onDidChangeConfiguration((e) => {
+        if (e.affectsConfiguration("hfm.preview.theme")) {
+          void this.panel.webview.postMessage({ type: "theme", theme: this.theme() });
+        }
+      }),
       this.panel.onDidDispose(() => this.dispose()),
     );
   }
@@ -70,6 +75,10 @@ export class PreviewPanel {
         html: this.render(),
       });
     }, UPDATE_DEBOUNCE_MS);
+  }
+
+  private theme(): PreviewTheme {
+    return vscode.workspace.getConfiguration("hfm.preview").get<PreviewTheme>("theme", "auto");
   }
 
   private render(): string {
@@ -109,6 +118,7 @@ export class PreviewPanel {
       nonce: randomBytes(16).toString("base64"),
       styleUri: media("preview.css"),
       scriptUri: media("preview.js"),
+      theme: this.theme(),
       body: this.render(),
     });
   }
