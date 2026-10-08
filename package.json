@@ -191,7 +191,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "vscode:prepublish": "node esbuild.mjs --production",
-    "package": "vsce package --no-dependencies",
+    "package": "vsce package --no-dependencies --readme-path README.marketplace.md",
     "host": "npm run build && code --extensionDevelopmentPath=. --new-window"
   },
   "dependencies": {

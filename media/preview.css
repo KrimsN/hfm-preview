@@ -122,6 +122,8 @@ body {
   margin: 32px 0 0;
   padding: 0 12px;
   border-left: 4px solid var(--habr-accent);
+  /* без этого просвечивает фон цитаты из стилей VS Code, и в светлой теме на тёмной теме редактора она нечитаема */
+  background: none;
 }
 
 /* Списки */

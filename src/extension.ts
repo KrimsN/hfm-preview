@@ -17,7 +17,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const open = (column: vscode.ViewColumn) => () => {
     const editor = vscode.window.activeTextEditor;
     if (!editor || editor.document.languageId !== HFM_LANGUAGE_ID) {
-      void vscode.window.showWarningMessage("Откройте файл *.habr.md, чтобы увидеть превью.");
+      void vscode.window.showWarningMessage("Откройте файл *.habr.md или выберите для файла язык «Habr Flavored Markdown», чтобы увидеть превью.");
       return;
     }
     PreviewPanel.show(context, parser, editor.document, column);

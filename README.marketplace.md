@@ -8,23 +8,6 @@
 
 ![Превью обновляется при наборе, диагностика подсвечивает проблемы](docs/images/demo.gif)
 
-## Установка
-
-| Источник | Для чего | Как |
-|---|---|---|
-| [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=krimsn.hfm-preview) | VS Code | Extensions → «Markdown Preview for Habr» → Install |
-| [Open VSX](https://open-vsx.org/extension/krimsn/hfm-preview) | VSCodium, Cursor, Windsurf и др. | Extensions → «Markdown Preview for Habr» → Install |
-| [Releases](https://github.com/KrimsN/hfm-preview/releases) | офлайн, конкретная версия | Extensions → `…` → Install from VSIX… |
-
-Из командной строки и из исходников (Node.js 24):
-
-```bash
-code --install-extension hfm-preview-0.1.2.vsix
-
-git clone https://github.com/KrimsN/hfm-preview.git && cd hfm-preview
-npm ci && npm run package && code --install-extension hfm-preview-*.vsix
-```
-
 ## Использование
 
 1. Откройте файл `*.habr.md`. Для другого `.md`: язык в строке состояния (справа внизу) → «Habr Flavored Markdown».
@@ -77,18 +60,4 @@ npm ci && npm run package && code --install-extension hfm-preview-*.vsix
 - Картинки на habrastorage расширение не загружает, только предупреждает о внешних источниках.
 - Для файлов с языком HFM встроенные функции VS Code для Markdown (превью, вставка ссылок и др.) не работают. Outline заголовков расширение строит само.
 
-## Разработка
-
-```bash
-npm ci
-npm test             # тесты, включая снапшоты по эталонам Хабра
-npm run typecheck
-npm run build
-```
-
-Запуск в окне разработки: F5 (конфигурация «живое обновление») или `npm run host`.
-Правила диалекта лежат в `src/data/`: языки подсветки, вставки, тексты диагностик.
-
-## Лицензия
-
-[MIT](LICENSE)
+Исходный код и история изменений: [GitHub](https://github.com/KrimsN/hfm-preview). Лицензия: MIT.
