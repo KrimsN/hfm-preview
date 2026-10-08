@@ -33,6 +33,13 @@
 - **Типографика** (уровень «подсказка»): кавычки, тире и интервалы, пробелы в числах и перед единицами,
   окончания порядковых числительных, даты, инициалы — по [правилам Хабра](https://habr.com/ru/docs/authors/typographics/).
 
+## Установка
+
+- **VSCodium, Cursor, Windsurf и другие форки** — найдите «Markdown Preview for Habr» в панели расширений
+  (источник — [Open VSX](https://open-vsx.org)).
+- **VS Code** — скачайте `.vsix` со страницы [Releases](https://github.com/KrimsN/hfm-preview/releases),
+  затем в панели расширений: меню `…` → **Install from VSIX…**.
+
 ## Использование
 
 1. Откройте файл с расширением `.habr.md` (или назначьте язык «Habr Flavored Markdown» вручную).
