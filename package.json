@@ -78,6 +78,11 @@
         "icon": "$(open-preview)"
       },
       {
+        "command": "hfm.generateToc",
+        "title": "Собрать оглавление с якорями",
+        "category": "HFM"
+      },
+      {
         "command": "hfm.previewThemeLight",
         "title": "Показать в светлой теме",
         "category": "HFM"
@@ -108,6 +113,10 @@
         },
         {
           "command": "hfm.openPreviewToSide",
+          "when": "editorLangId == hfm"
+        },
+        {
+          "command": "hfm.generateToc",
           "when": "editorLangId == hfm"
         },
         {
@@ -161,6 +170,11 @@
           "type": "boolean",
           "default": true,
           "description": "Подсказки по типографике Хабра: кавычки, тире, пробелы в числах, даты и т. п. (уровень «подсказка»)."
+        },
+        "hfm.toc.transliterate": {
+          "type": "boolean",
+          "default": true,
+          "description": "Писать имена якорей латиницей (kak-eto-rabotaet вместо как-это-работает): такие ссылки не превращаются в %D0%BA… при копировании."
         },
         "hfm.preview.theme": {
           "type": "string",

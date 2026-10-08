@@ -3,6 +3,7 @@ import { createParser } from "./markdown/createParser";
 import { watchForRebuild } from "./devReload";
 import { HfmCodeActions, HfmDiagnostics } from "./diagnostics/provider";
 import { HfmSymbolProvider } from "./outline/symbolProvider";
+import { generateToc } from "./outline/tocCommand";
 import { PreviewPanel, PreviewSerializer, VIEW_TYPE } from "./preview/previewPanel";
 
 const HFM_LANGUAGE_ID = "hfm";
@@ -37,6 +38,10 @@ export function activate(context: vscode.ExtensionContext): void {
         PreviewPanel.target()?.setTheme(name.toLowerCase() as "light" | "dark" | "auto");
       }),
     ),
+    vscode.commands.registerCommand("hfm.generateToc", () => {
+      const editor = vscode.window.activeTextEditor;
+      if (editor?.document.languageId === HFM_LANGUAGE_ID) void generateToc(editor);
+    }),
     vscode.commands.registerCommand("hfm.openPreview", open(vscode.ViewColumn.Active)),
     vscode.commands.registerCommand("hfm.openPreviewToSide", open(vscode.ViewColumn.Beside)),
   );
