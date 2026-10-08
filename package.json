@@ -153,7 +153,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "vscode:prepublish": "node esbuild.mjs --production",
-    "package": "vsce package --allow-missing-repository --skip-license"
+    "package": "vsce package --allow-missing-repository --skip-license",
+    "host": "npm run build && code --extensionDevelopmentPath=. --new-window"
   },
   "dependencies": {
     "@codemirror/lang-cpp": "^6.0.3",
