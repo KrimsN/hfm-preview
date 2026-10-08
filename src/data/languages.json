@@ -1,0 +1,21 @@
+{
+  "supported": [
+    "1c", "assembly", "bash", "css", "cmake", "coffeescript", "cpp", "cs", "dart", "delphi", "diff",
+    "django", "elixir", "erlang", "fsharp", "go", "haskell", "java", "javascript", "json", "julia",
+    "kotlin", "lisp", "lua", "markdown", "matlab", "nginx", "objectivec", "perl", "pgsql", "php",
+    "powershell", "python", "r", "ruby", "rust", "scala", "smalltalk", "sql", "swift", "typescript",
+    "vala", "vbscript", "vhdl", "xml", "yaml"
+  ],
+  "synonyms": {
+    "js": "javascript",
+    "ts": "typescript",
+    "html": "xml",
+    "sh": "bash",
+    "shell": "bash",
+    "c++": "cpp",
+    "csharp": "cs",
+    "c#": "cs",
+    "yml": "yaml",
+    "py": "python"
+  }
+}

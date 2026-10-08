@@ -3,6 +3,9 @@ import { anchorPlugin } from "./plugins/anchor";
 import { imagesPlugin } from "./plugins/images";
 import { linksPlugin } from "./plugins/links";
 import { mentionsPlugin } from "./plugins/mentions";
+import { blockquotesPlugin } from "./plugins/blockquotes";
+import { codePlugin } from "./plugins/code";
+import { tablesPlugin } from "./plugins/tables";
 import { headingsPlugin } from "./plugins/headings";
 import { spoilerPlugin } from "./plugins/spoiler";
 
@@ -23,6 +26,9 @@ export function createParser(): HfmParser {
 
   return md
     .use(headingsPlugin)
+    .use(blockquotesPlugin)
+    .use(codePlugin)
+    .use(tablesPlugin)
     .use(linksPlugin)
     .use(mentionsPlugin)
     .use(imagesPlugin)

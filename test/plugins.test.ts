@@ -102,3 +102,37 @@ describe("mentions", () => {
     expect(md.renderInline("a@b.com")).not.toContain("mention");
   });
 });
+
+describe("code", () => {
+  it("ставит класс только для языков из списка", () => {
+    expect(md.render("```python\nx\n```")).toBe('<pre><code class="python">x\n</code></pre>\n');
+    expect(md.render("```js\nx\n```")).toBe("<pre><code>x\n</code></pre>\n");
+    expect(md.render("```unknown\nx\n```")).toBe("<pre><code>x\n</code></pre>\n");
+  });
+
+  it("экранирует содержимое", () => {
+    expect(md.render("```xml\n<a>\n```")).toContain("&lt;a&gt;");
+  });
+});
+
+describe("tables", () => {
+  it("рисует таблицу как Хабр и игнорирует выравнивание", () => {
+    const html = md.render("| a | b |\n|:-:|--:|\n| 1 | 2 |\n");
+    expect(html).toBe(
+      '<div class="table"><table><tbody>\n<tr>\n<th><p align="left">a</p></th><th><p align="left">b</p></th></tr>\n<tr>\n<td><p align="left">1</p></td><td><p align="left">2</p></td></tr>\n</tbody></table></div>\n',
+    );
+  });
+});
+
+describe("blockquotes", () => {
+  it("расплющивает вложенные цитаты", () => {
+    expect(md.render("> a\n>> b")).toBe("<blockquote>\n<p>a</p>\n<p>b</p>\n</blockquote>\n");
+  });
+
+  it("превращает код в inline-код, заголовок в абзац", () => {
+    const html = md.render("> ```python\n> print(1)\n> ```\n>\n> ## Заголовок\n");
+    expect(html).toBe(
+      "<blockquote>\n<p><code>print(1)</code></p>\n<p>Заголовок</p>\n</blockquote>\n",
+    );
+  });
+});
