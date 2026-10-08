@@ -4,6 +4,9 @@ updates:
     directory: /
     schedule:
       interval: monthly
+    ignore:
+      # версия типов не должна опережать engines.vscode; поднимается вручную вместе с ним
+      - dependency-name: "@types/vscode"
   - package-ecosystem: github-actions
     directory: /
     schedule:
