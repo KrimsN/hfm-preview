@@ -2,6 +2,15 @@
   "version": "0.2.0",
   "configurations": [
     {
+      // Пересборка в фоне; окно расширения перезагружается само, когда бандл или стили изменились
+      "name": "Запуск расширения (живое обновление)",
+      "type": "extensionHost",
+      "request": "launch",
+      "noDebug": true,
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
+      "preLaunchTask": "npm: watch"
+    },
+    {
       "name": "Запуск расширения (без отладчика)",
       "type": "extensionHost",
       "request": "launch",

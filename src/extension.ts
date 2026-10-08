@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { createParser } from "./markdown/createParser";
+import { watchForRebuild } from "./devReload";
 import { HfmCodeActions, HfmDiagnostics } from "./diagnostics/provider";
 import { HfmSymbolProvider } from "./outline/symbolProvider";
 import { PreviewPanel, PreviewSerializer, VIEW_TYPE } from "./preview/previewPanel";
@@ -8,6 +9,7 @@ const HFM_LANGUAGE_ID = "hfm";
 
 export function activate(context: vscode.ExtensionContext): void {
   const parser = createParser();
+  watchForRebuild(context);
 
   const open = (column: vscode.ViewColumn) => () => {
     const editor = vscode.window.activeTextEditor;

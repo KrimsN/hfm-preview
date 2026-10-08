@@ -7,6 +7,25 @@ const mathjaxVersion = JSON.parse(readFileSync("node_modules/mathjax-full/packag
 const production = process.argv.includes("--production");
 const watch = process.argv.includes("--watch");
 
+/**
+ * Маркеры начала и конца сборки для фоновой задачи VS Code (.vscode/tasks.json):
+ * по ним отладчик понимает, что можно запускать окно расширения.
+ * @type {import("esbuild").Plugin}
+ */
+const watchMarkers = {
+  name: "watch-markers",
+  setup(build) {
+    build.onStart(() => console.log("[watch] build started"));
+    build.onEnd((result) => {
+      for (const { text, location } of result.errors) {
+        console.error(`✘ [ERROR] ${text}`);
+        if (location) console.error(`    ${location.file}:${location.line}:${location.column}:`);
+      }
+      console.log("[watch] build finished");
+    });
+  },
+};
+
 /** @type {import("esbuild").BuildOptions} */
 const options = {
   entryPoints: ["src/extension.ts"],
@@ -19,7 +38,8 @@ const options = {
   define: { PACKAGE_VERSION: JSON.stringify(mathjaxVersion) },
   sourcemap: !production,
   minify: production,
-  logLevel: "info",
+  logLevel: watch ? "silent" : "info",
+  plugins: watch ? [watchMarkers] : [],
 };
 
 if (watch) {
