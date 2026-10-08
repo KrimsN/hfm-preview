@@ -1,0 +1,190 @@
+/*
+ * Стили превью HFM. Значения (шрифты, отступы, цвета) сняты с опубликованных статей,
+ * сам CSS Хабра не копируется. Источник: research/HFM_SPEC.md, разделы «CSS» и «Палитра».
+ */
+
+:root,
+body.vscode-light,
+body.vscode-high-contrast-light {
+  --habr-bg: rgb(255, 255, 255);
+  --habr-text: rgb(51, 51, 51);
+  --habr-accent: rgb(84, 142, 171);
+  --habr-accent-10: rgba(84, 142, 171, 0.1);
+  --habr-accent-30: rgba(84, 142, 171, 0.3);
+  --habr-muted: rgb(143, 143, 143);
+  --habr-block-bg: rgb(247, 247, 247);
+  --habr-code-border: rgb(240, 240, 240);
+  --habr-border: rgb(191, 191, 191);
+  --habr-hidden: rgb(188, 206, 215);
+}
+
+body.vscode-dark,
+body.vscode-high-contrast {
+  --habr-bg: rgb(23, 23, 23);
+  --habr-text: rgb(222, 222, 222);
+  --habr-accent: rgb(76, 182, 235);
+  --habr-accent-10: rgba(76, 182, 235, 0.1);
+  --habr-accent-30: rgba(76, 182, 235, 0.3);
+  --habr-muted: rgb(171, 171, 171);
+  --habr-block-bg: rgb(38, 38, 38);
+  --habr-code-border: rgb(8, 8, 8);
+  --habr-border: rgb(77, 77, 77);
+  --habr-hidden: rgb(107, 134, 148);
+}
+
+:root {
+  --habr-font-text: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  --habr-font-heading: "Fira Sans", sans-serif;
+  --habr-font-mono: Menlo, Monaco, Consolas, "Courier New", Courier, monospace;
+}
+
+body {
+  margin: 0;
+  padding: 32px 16px 64px;
+  background: var(--habr-bg);
+  color: var(--habr-text);
+  font-family: var(--habr-font-text);
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.habr-article {
+  max-width: 739px;
+  margin: 0 auto;
+  overflow-wrap: break-word;
+}
+
+/* Заголовки: markdown # → h2 сдвигает плагин, здесь только вид */
+.habr-article h1,
+.habr-article h2,
+.habr-article h3,
+.habr-article h4,
+.habr-article h5,
+.habr-article h6 {
+  font-family: var(--habr-font-heading);
+  font-weight: 500;
+  color: var(--habr-text);
+  margin: 32px 0 0;
+}
+.habr-article h2 { font-size: 22px; line-height: 32px; margin-top: 56px; }
+.habr-article h3 { font-size: 18px; line-height: 26px; }
+.habr-article h4 { font-size: 16px; line-height: 20px; }
+.habr-article > :first-child { margin-top: 0; }
+
+/* Абзацы */
+.habr-article p { margin: 0; }
+.habr-article p + p { margin-top: 24px; }
+.habr-article h2 + p,
+.habr-article h3 + p { margin-top: 12px; }
+
+/* Ссылки: в статье без фона и подчёркивания */
+.habr-article a {
+  color: var(--habr-accent);
+  text-decoration: none;
+}
+.habr-article sup { font-size: 12px; line-height: 0; }
+
+/* Код */
+.habr-article code {
+  font-family: var(--habr-font-mono);
+  font-size: 16px;
+  background: var(--habr-block-bg);
+  padding: 3px 6px;
+  border-radius: 4px;
+  white-space: break-spaces;
+}
+.habr-article pre {
+  margin: 32px 0 0;
+  padding: 17px 10px 10px 20px;
+  background: var(--habr-block-bg);
+  border: 1px solid var(--habr-code-border);
+  border-radius: 4px;
+  overflow-x: auto;
+  tab-size: 4;
+}
+.habr-article pre code {
+  padding: 0;
+  background: none;
+  font-size: 14px;
+  line-height: 22.4px;
+  white-space: pre;
+}
+
+/* Цитата */
+.habr-article blockquote {
+  margin: 32px 0 0;
+  padding: 0 12px;
+  border-left: 4px solid var(--habr-accent);
+}
+
+/* Списки */
+.habr-article ul,
+.habr-article ol {
+  margin: 16px 0 32px;
+  padding-left: 32px;
+}
+.habr-article li { margin-bottom: 6px; }
+
+/* Картинки */
+.habr-article figure { margin: 32px 0 0; text-align: center; }
+.habr-article img { max-width: 100%; background: #fff; }
+.habr-article figcaption {
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--habr-muted);
+  white-space: pre-wrap;
+}
+.habr-article figure.bordered img { border: 1px solid var(--habr-border); }
+
+/* Таблицы */
+.habr-article table {
+  width: 100%;
+  margin-top: 32px;
+  border-collapse: collapse;
+}
+.habr-article th,
+.habr-article td {
+  padding: 6px 12px 9px;
+  border: 1px solid var(--habr-border);
+  text-align: left;
+}
+.habr-article th { font-weight: 700; text-align: center; }
+
+/* Разделитель */
+.habr-article hr {
+  width: 280px;
+  margin: 56px auto;
+  border: 0;
+  border-top: 1px solid var(--habr-text);
+}
+
+/* Спойлер */
+.habr-article details.spoiler {
+  margin-top: 32px;
+  background: var(--habr-block-bg);
+  border-radius: 4px;
+}
+.habr-article details.spoiler > summary {
+  padding: 16px 36px;
+  line-height: 19px;
+  color: var(--habr-accent);
+  text-decoration: underline dotted;
+  cursor: pointer;
+}
+.habr-article .spoiler__content { padding: 0 36px 16px; line-height: 26px; }
+
+/* Аббревиатура и скрытый текст */
+.habr-article abbr.habraabbr {
+  background: var(--habr-accent-10);
+  border: 1px solid var(--habr-accent-30);
+  padding: 1px 4px;
+  border-radius: 4px;
+  text-decoration: none;
+}
+.habr-article .habrahidden { background: var(--habr-hidden); border-radius: 4px; }
+
+/* Формулы */
+.habr-article img.formula { background: none; }
+.habr-article img.formula.inline { display: inline-block; vertical-align: middle; }
+.habr-article img.formula:not(.inline) { display: block; margin: 52px auto; }

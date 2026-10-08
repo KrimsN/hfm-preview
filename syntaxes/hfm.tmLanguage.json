@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Habr Flavored Markdown",
+  "scopeName": "text.html.hfm",
+  "patterns": [
+    { "include": "#habr-tags" },
+    { "include": "text.html.markdown" }
+  ],
+  "repository": {
+    "habr-tags": {
+      "patterns": [
+        {
+          "name": "meta.tag.habr.hfm entity.name.tag.habr.hfm",
+          "match": "</?(spoiler|anchor|oembed|persona)\b[^>]*>"
+        }
+      ]
+    }
+  }
+}

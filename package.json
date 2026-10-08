@@ -1,0 +1,99 @@
+{
+  "name": "hfm-preview",
+  "displayName": "Markdown Preview for Habr",
+  "description": "Превью статьи в том виде, в каком её отрисует Хабр, и диагностика неподдерживаемых конструкций",
+  "version": "0.0.1",
+  "private": true,
+  "license": "MIT",
+  "publisher": "krimsn",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "languages": [
+      {
+        "id": "hfm",
+        "aliases": [
+          "Habr Flavored Markdown",
+          "HFM"
+        ],
+        "extensions": [
+          ".habr.md"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "hfm",
+        "scopeName": "text.html.hfm",
+        "path": "./syntaxes/hfm.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "hfm.openPreview",
+        "title": "Открыть превью (Habr)",
+        "category": "HFM",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "hfm.openPreviewToSide",
+        "title": "Открыть превью сбоку (Habr)",
+        "category": "HFM",
+        "icon": "$(open-preview)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "hfm.openPreviewToSide",
+          "when": "editorLangId == hfm",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "hfm.openPreview",
+          "when": "editorLangId == hfm"
+        },
+        {
+          "command": "hfm.openPreviewToSide",
+          "when": "editorLangId == hfm"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "hfm.openPreviewToSide",
+        "key": "ctrl+k v",
+        "mac": "cmd+k v",
+        "when": "editorLangId == hfm"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "vscode:prepublish": "node esbuild.mjs --production"
+  },
+  "dependencies": {
+    "markdown-it": "^15.0.2"
+  },
+  "devDependencies": {
+    "@types/markdown-it": "^14.2.0",
+    "@types/node": "^26.6.4",
+    "@types/vscode": "^1.90.0",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}
