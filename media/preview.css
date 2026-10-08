@@ -188,3 +188,64 @@ body {
 .habr-article img.formula { background: none; }
 .habr-article img.formula.inline { display: inline-block; vertical-align: middle; }
 .habr-article img.formula:not(.inline) { display: block; margin: 52px auto; }
+
+/* SVG формул рисуется чёрным; в тёмной теме инвертируем */
+body.vscode-dark img.formula,
+body.vscode-high-contrast img.formula { filter: invert(0.87); background: none; }
+.habr-article code.formula-error { color: #c0392b; }
+
+/* Персона */
+.habr-article .persona {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  grid-template-areas: "photo name" "photo role";
+  column-gap: 12px;
+  align-items: center;
+  margin-top: 24px;
+}
+.habr-article .persona__image {
+  grid-area: photo;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.habr-article .persona__heading {
+  grid-area: name;
+  margin: 0;
+  font: 500 16px/20px var(--habr-font-heading);
+  align-self: end;
+}
+.habr-article .persona__text {
+  grid-area: role;
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--habr-muted);
+  align-self: start;
+}
+
+/* Медиаэлементы: заглушки, настоящие embed Хабр строит у себя */
+.habr-article .embed__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 16 / 9;
+  margin-top: 32px;
+  background: var(--habr-block-bg);
+  border-radius: 4px;
+}
+.habr-article .embed_link {
+  margin-top: 32px;
+  border: 1px solid var(--habr-border);
+  border-radius: 4px;
+}
+.habr-article .embed__caption { padding: 12px 16px; }
+.habr-article .embed__caption-title { font-weight: 500; }
+.habr-article .embed__caption-host {
+  display: block;
+  font-size: 13px;
+  color: var(--habr-muted);
+}
+.habr-article .anchor { display: block; }

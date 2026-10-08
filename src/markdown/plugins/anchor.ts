@@ -15,6 +15,7 @@ export function anchorPlugin(md: HfmParser): void {
     const token = state.push("html_block", "", 0);
     token.content = `<a class="anchor" name="${name}" id="${name}"></a>\n`;
     token.map = [startLine, startLine + 1];
+    token.meta = { generated: true };
     state.line = startLine + 1;
     return true;
   });

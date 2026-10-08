@@ -94,7 +94,7 @@ describe("images", () => {
 describe("mentions", () => {
   it("превращает @username в ссылку на профиль", () => {
     expect(md.renderInline("привет @krimsn!")).toBe(
-      'привет <a class="mention" href="/users/krimsn" rel="noopener nofollow">@krimsn</a>!',
+      'привет <a class="mention" href="/users/krimsn">@krimsn</a>!',
     );
   });
 
@@ -134,5 +134,86 @@ describe("blockquotes", () => {
     expect(html).toBe(
       "<blockquote>\n<p><code>print(1)</code></p>\n<p>Заголовок</p>\n</blockquote>\n",
     );
+  });
+});
+
+describe("formulas", () => {
+  it("рисует inline-формулу в двух синтаксисах", () => {
+    for (const src of ["$e=mc^2$", "$inline$e=mc^2$inline$"]) {
+      const html = md.renderInline(src);
+      expect(html).toContain('class="formula inline"');
+      expect(html).toContain('source="e=mc^2"');
+    }
+  });
+
+  it("не считает долларами формулу цену", () => {
+    expect(md.renderInline("цена 100$ и 200$ за штуку")).toBe("цена 100$ и 200$ за штуку");
+  });
+
+  it("рисует блочные формулы вне абзаца, в том числе многострочную", () => {
+    for (const src of ["$$x^2$$", "$$display$$x^2$$display$$", "$$\nx^2\n$$"]) {
+      const html = md.render(src);
+      expect(html).toMatch(/^<img class="formula" source="x\^2"/);
+    }
+  });
+});
+
+describe("embeds", () => {
+  it("видео — рамка, остальное — карточка-ссылка", () => {
+    expect(md.render("<oembed>https://www.youtube.com/watch?v=x</oembed>")).toContain("embed_video");
+    expect(md.render("<oembed>https://github.com/a/b</oembed>")).toContain("embed_link");
+  });
+
+  it("iframe превращается в медиаэлемент", () => {
+    const html = md.render('<iframe src="https://www.youtube.com/embed/abc" width="560"></iframe>\n');
+    expect(html).toContain("embed_video");
+    expect(html).toContain("watch?v=abc");
+  });
+});
+
+describe("persona", () => {
+  it("собирает блок персоны", () => {
+    const html = md.render("<persona>\n\n  ![](https://a.b/i.jpg)\n  ##### Имя\n  Роль\n\n</persona>\n");
+    expect(html).toBe(
+      '<div class="persona"><img class="image persona__image" src="https://a.b/i.jpg"><h5 class="persona__heading">Имя</h5><p class="persona__text">Роль</p></div>\n',
+    );
+  });
+});
+
+describe("html", () => {
+  it("выбрасывает span, mark, kbd, small и переименовывает b/i", () => {
+    expect(md.render('a <span style="color:red">b</span> <mark>c</mark> <kbd>d</kbd> <b>e</b> <i>f</i>')).toBe(
+      "<p>a b c d <strong>e</strong> <em>f</em></p>\n",
+    );
+  });
+
+  it("убирает комментарии, в том числе многострочные", () => {
+    expect(md.render("a <!-- x --> b")).toBe("<p>a  b</p>\n");
+    expect(md.render("<!--\nx\n-->\n\nтекст")).toBe("<p>текст</p>\n");
+  });
+
+  it("div и p теряют выравнивание", () => {
+    expect(md.render('<div align="center">x</div>')).toBe("<p>x</p>");
+  });
+
+  it("abbr получает класс habraabbr", () => {
+    expect(md.renderInline('<abbr title="Расшифровка">КДПВ</abbr>')).toBe(
+      '<abbr class="habraabbr" title="Расшифровка">КДПВ</abbr>',
+    );
+  });
+
+  it("inline-картинка не с habrastorage пропадает", () => {
+    expect(md.renderInline('a <img inline="true" src="https://a.b/i.png" /> b')).toBe("a  b");
+    expect(md.renderInline('<img inline="true" src="https://habrastorage.org/i.png" />')).toContain("<img");
+  });
+
+  it("HTML-таблица получает разметку таблицы Хабра", () => {
+    expect(md.render("<table><tr><td>x</td></tr></table>")).toBe(
+      '<div class="table"><table><tbody><tr><td><p align="left">x</p></td></tr></tbody></table></div>',
+    );
+  });
+
+  it("спойлер не ломается очисткой", () => {
+    expect(md.render('<spoiler title="a">\n\nx\n\n</spoiler>\n')).toContain('<div class="spoiler__content">');
   });
 });

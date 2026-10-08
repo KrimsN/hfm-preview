@@ -21,7 +21,7 @@ export function headingsPlugin(md: HfmParser): void {
       const inline = tokens[i + 1];
       if (inline?.type === "inline" && inline.children) {
         const text = inline.children
-          .map((t) => (t.type === "softbreak" || t.type === "hardbreak" ? " " : t.content))
+          .map((t) => (t.type === "softbreak" || t.type === "hardbreak" ? " " : t.type === "html_inline" ? "" : t.content))
           .join("");
         const textToken = new state.Token("text", "", 0);
         textToken.content = text;
