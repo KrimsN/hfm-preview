@@ -12,6 +12,7 @@ import { listsPlugin } from "./plugins/lists";
 import { linksPlugin } from "./plugins/links";
 import { mentionsPlugin } from "./plugins/mentions";
 import { personaPlugin } from "./plugins/persona";
+import { sourceLinesPlugin } from "./plugins/sourceLines";
 import { spoilerPlugin } from "./plugins/spoiler";
 import { tablesPlugin } from "./plugins/tables";
 
@@ -48,5 +49,6 @@ export function createParser(): HfmParser {
     .use(imagesPlugin)
     .use(spoilerPlugin)
     .use(codePlugin)
-    .use(tablesPlugin);
+    .use(tablesPlugin)
+    .use(sourceLinesPlugin);
 }

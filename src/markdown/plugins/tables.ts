@@ -8,7 +8,10 @@ export function tablesPlugin(md: HfmParser): void {
   const rules = md.renderer.rules;
   const emit = (html: string) => () => html;
 
-  rules.table_open = emit('<div class="table"><table><tbody>\n');
+  rules.table_open = (tokens, idx) => {
+    const line = tokens[idx]!.attrGet("data-line");
+    return `<div class="table"${line ? ` data-line="${line}"` : ""}><table><tbody>\n`;
+  };
   rules.table_close = emit("</tbody></table></div>\n");
   for (const name of ["thead_open", "thead_close", "tbody_open", "tbody_close"]) {
     rules[name] = emit("");

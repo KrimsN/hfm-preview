@@ -257,3 +257,25 @@ describe("подсветка кода", () => {
     expect(md.render("```xml\n<a b='1'/>\n```")).not.toContain("<a b");
   });
 });
+
+describe("sourceLines", () => {
+  const env = { sourceLines: true };
+
+  it("помечает блоки строкой исходника", () => {
+    const html = md.render("# Заголовок\n\nабзац\n\n```js\nx\n```\n\n- пункт\n", env);
+    expect(html).toContain('<h2 data-line="0">');
+    expect(html).toContain('<p data-line="2">');
+    expect(html).toContain('<pre data-line="4">');
+    expect(html).toContain('<li data-line="8">');
+  });
+
+  it("помечает таблицы, HTML-блоки и картинки", () => {
+    expect(md.render("a\n\n| a |\n|---|\n| 1 |\n", env)).toContain('<div class="table" data-line="2">');
+    expect(md.render('a\n\n<spoiler title="x">\n\nt\n\n</spoiler>\n', env)).toContain('<details data-line="2" class="spoiler">');
+    expect(md.render("a\n\n![](https://a.b/i.png)\n", env)).toContain('<figure data-line="2"');
+  });
+
+  it("без флага разметка не меняется", () => {
+    expect(md.render("# a")).not.toContain("data-line");
+  });
+});

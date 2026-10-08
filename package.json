@@ -14,7 +14,9 @@
     "Other"
   ],
   "main": "./dist/extension.js",
-  "activationEvents": [],
+  "activationEvents": [
+    "onWebviewPanel:hfm.preview"
+  ],
   "contributes": {
     "languages": [
       {
@@ -143,6 +145,11 @@
           ],
           "default": "auto",
           "description": "Тема превью статьи."
+        },
+        "hfm.preview.scrollSync": {
+          "type": "boolean",
+          "default": true,
+          "description": "Синхронизировать прокрутку превью и редактора в обе стороны."
         }
       }
     }

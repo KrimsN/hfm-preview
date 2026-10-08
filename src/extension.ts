@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { createParser } from "./markdown/createParser";
 import { HfmCodeActions, HfmDiagnostics } from "./diagnostics/provider";
 import { HfmSymbolProvider } from "./outline/symbolProvider";
-import { PreviewPanel } from "./preview/previewPanel";
+import { PreviewPanel, PreviewSerializer, VIEW_TYPE } from "./preview/previewPanel";
 
 const HFM_LANGUAGE_ID = "hfm";
 
@@ -19,6 +19,7 @@ export function activate(context: vscode.ExtensionContext): void {
   };
 
   context.subscriptions.push(
+    vscode.window.registerWebviewPanelSerializer(VIEW_TYPE, new PreviewSerializer(context, parser)),
     new HfmDiagnostics(HFM_LANGUAGE_ID),
     vscode.languages.registerCodeActionsProvider({ language: HFM_LANGUAGE_ID }, new HfmCodeActions(), HfmCodeActions.metadata),
     vscode.languages.registerDocumentSymbolProvider(

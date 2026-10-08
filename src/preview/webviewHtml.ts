@@ -7,9 +7,14 @@ export interface WebviewHtmlOptions {
   scriptUri: string;
   /** `light` или `dark`; `auto` — тема VS Code */
   theme: PreviewTheme;
+  /** Адрес документа: по нему панель восстанавливается после перезапуска VS Code */
+  documentUri: string;
   /** Уже отрендеренное тело статьи */
   body: string;
 }
+
+const escapeAttr = (value: string): string =>
+  value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 
 export function buildWebviewHtml(o: WebviewHtmlOptions): string {
   const csp = [
@@ -19,6 +24,7 @@ export function buildWebviewHtml(o: WebviewHtmlOptions): string {
     `font-src ${o.cspSource}`,
     `script-src 'nonce-${o.nonce}'`,
   ].join("; ");
+  const theme = o.theme === "auto" ? "" : ` data-theme="${o.theme}"`;
 
   return `<!DOCTYPE html>
 <html lang="ru">
@@ -28,7 +34,7 @@ export function buildWebviewHtml(o: WebviewHtmlOptions): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="${o.styleUri}">
 </head>
-<body${o.theme === "auto" ? "" : ` data-theme="${o.theme}"`}>
+<body${theme} data-document-uri="${escapeAttr(o.documentUri)}">
   <article id="content" class="habr-article">${o.body}</article>
   <script nonce="${o.nonce}" src="${o.scriptUri}"></script>
 </body>

@@ -59,6 +59,7 @@ function splitParagraph(
       flush();
       const figure = new state.Token("html_block", "", 0);
       figure.content = figureHtml(child);
+      figure.map = open.map;
       out.push(figure);
     } else if (child.type !== "link_open" && child.type !== "link_close") {
       segment.push(child);
