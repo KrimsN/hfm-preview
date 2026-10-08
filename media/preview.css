@@ -40,6 +40,8 @@ body:not([data-theme]).vscode-high-contrast {
 body {
   margin: 0;
   padding: 32px 16px 64px;
+  min-height: 100vh;
+  box-sizing: border-box;
   background: var(--habr-bg);
   color: var(--habr-text);
   font-family: var(--habr-font-text);

@@ -26,6 +26,11 @@ export function activate(context: vscode.ExtensionContext): void {
       new HfmSymbolProvider(),
       { label: "Habr Flavored Markdown" },
     ),
+    ...(["Light", "Dark", "Auto"] as const).map((name) =>
+      vscode.commands.registerCommand(`hfm.previewTheme${name}`, () => {
+        PreviewPanel.target()?.setTheme(name.toLowerCase() as "light" | "dark" | "auto");
+      }),
+    ),
     vscode.commands.registerCommand("hfm.openPreview", open(vscode.ViewColumn.Active)),
     vscode.commands.registerCommand("hfm.openPreviewToSide", open(vscode.ViewColumn.Beside)),
   );

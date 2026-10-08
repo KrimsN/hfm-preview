@@ -48,6 +48,21 @@
         "title": "Открыть превью сбоку (Habr)",
         "category": "HFM",
         "icon": "$(open-preview)"
+      },
+      {
+        "command": "hfm.previewThemeLight",
+        "title": "Показать в светлой теме",
+        "category": "HFM"
+      },
+      {
+        "command": "hfm.previewThemeDark",
+        "title": "Показать в тёмной теме",
+        "category": "HFM"
+      },
+      {
+        "command": "hfm.previewThemeAuto",
+        "title": "Тема как в VS Code",
+        "category": "HFM"
       }
     ],
     "menus": {
@@ -66,6 +81,35 @@
         {
           "command": "hfm.openPreviewToSide",
           "when": "editorLangId == hfm"
+        },
+        {
+          "command": "hfm.previewThemeLight",
+          "when": "false"
+        },
+        {
+          "command": "hfm.previewThemeDark",
+          "when": "false"
+        },
+        {
+          "command": "hfm.previewThemeAuto",
+          "when": "false"
+        }
+      ],
+      "webview/context": [
+        {
+          "command": "hfm.previewThemeDark",
+          "when": "webviewId == 'hfm.preview' && webviewSection == 'preview' && hfmTheme == 'light'",
+          "group": "hfm@1"
+        },
+        {
+          "command": "hfm.previewThemeLight",
+          "when": "webviewId == 'hfm.preview' && webviewSection == 'preview' && hfmTheme == 'dark'",
+          "group": "hfm@1"
+        },
+        {
+          "command": "hfm.previewThemeAuto",
+          "when": "webviewId == 'hfm.preview' && webviewSection == 'preview' && hfmThemeMode != 'auto'",
+          "group": "hfm@2"
         }
       ]
     },

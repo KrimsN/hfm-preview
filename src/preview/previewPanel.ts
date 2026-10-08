@@ -10,6 +10,21 @@ const UPDATE_DEBOUNCE_MS = 150;
 /** Одна панель превью на один документ. */
 export class PreviewPanel {
   private static readonly panels = new Map<string, PreviewPanel>();
+  private static current: PreviewPanel | undefined;
+
+  /** Тема, выбранная из меню превью; сбрасывается при изменении настройки. */
+  private themeOverride: PreviewTheme | undefined;
+
+  /** Панель, к которой относятся команды меню: активная либо единственная открытая. */
+  static target(): PreviewPanel | undefined {
+    if (PreviewPanel.current?.panel.visible) return PreviewPanel.current;
+    return PreviewPanel.panels.size === 1 ? [...PreviewPanel.panels.values()][0] : undefined;
+  }
+
+  setTheme(theme: PreviewTheme): void {
+    this.themeOverride = theme;
+    void this.panel.webview.postMessage({ type: "theme", theme });
+  }
 
   private readonly disposables: vscode.Disposable[] = [];
   private updateTimer: NodeJS.Timeout | undefined;
@@ -24,6 +39,7 @@ export class PreviewPanel {
     const existing = PreviewPanel.panels.get(key);
     if (existing) {
       existing.panel.reveal(column, true);
+      PreviewPanel.current = existing;
       return;
     }
 
@@ -40,7 +56,9 @@ export class PreviewPanel {
         ],
       },
     );
-    PreviewPanel.panels.set(key, new PreviewPanel(context, parser, document, panel, key));
+    const created = new PreviewPanel(context, parser, document, panel, key);
+    PreviewPanel.panels.set(key, created);
+    PreviewPanel.current = created;
   }
 
   private constructor(
@@ -58,8 +76,12 @@ export class PreviewPanel {
           this.scheduleUpdate();
         }
       }),
+      this.panel.onDidChangeViewState((e) => {
+        if (e.webviewPanel.active) PreviewPanel.current = this;
+      }),
       vscode.workspace.onDidChangeConfiguration((e) => {
         if (e.affectsConfiguration("hfm.preview.theme")) {
+          this.themeOverride = undefined;
           void this.panel.webview.postMessage({ type: "theme", theme: this.theme() });
         }
       }),
@@ -78,7 +100,7 @@ export class PreviewPanel {
   }
 
   private theme(): PreviewTheme {
-    return vscode.workspace.getConfiguration("hfm.preview").get<PreviewTheme>("theme", "auto");
+    return this.themeOverride ?? vscode.workspace.getConfiguration("hfm.preview").get<PreviewTheme>("theme", "auto");
   }
 
   private render(): string {
@@ -126,6 +148,7 @@ export class PreviewPanel {
   private dispose(): void {
     clearTimeout(this.updateTimer);
     PreviewPanel.panels.delete(this.key);
+    if (PreviewPanel.current === this) PreviewPanel.current = undefined;
     this.disposables.forEach((d) => d.dispose());
   }
 }
