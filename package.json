@@ -2,15 +2,41 @@
   "name": "hfm-preview",
   "displayName": "Markdown Preview for Habr",
   "description": "Превью статьи в том виде, в каком её отрисует Хабр, и диагностика неподдерживаемых конструкций",
-  "version": "0.0.1",
-  "private": true,
+  "version": "0.1.0",
   "license": "MIT",
   "publisher": "krimsn",
+  "author": {
+    "name": "KrimsN",
+    "url": "https://github.com/KrimsN"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KrimsN/hfm-preview.git"
+  },
+  "bugs": {
+    "url": "https://github.com/KrimsN/hfm-preview/issues"
+  },
+  "homepage": "https://github.com/KrimsN/hfm-preview#readme",
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#1f2d3d",
+    "theme": "dark"
+  },
+  "keywords": [
+    "habr",
+    "хабр",
+    "markdown",
+    "preview",
+    "превью",
+    "habr.com",
+    "linter"
+  ],
   "engines": {
     "vscode": "^1.90.0"
   },
   "categories": [
     "Programming Languages",
+    "Linters",
     "Other"
   ],
   "main": "./dist/extension.js",
@@ -165,7 +191,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "vscode:prepublish": "node esbuild.mjs --production",
-    "package": "vsce package --allow-missing-repository --skip-license",
+    "package": "vsce package --no-dependencies",
     "host": "npm run build && code --extensionDevelopmentPath=. --new-window"
   },
   "dependencies": {
@@ -202,6 +228,8 @@
     "dist/extension.js",
     "media",
     "syntaxes",
-    "language-configuration.json"
+    "language-configuration.json",
+    "LICENSE",
+    "CHANGELOG.md"
   ]
 }
