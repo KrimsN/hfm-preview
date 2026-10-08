@@ -1,0 +1,42 @@
+name: Publish to VS Code Marketplace
+
+# Ручной запуск: публикует .vsix из уже созданного GitHub Release на VS Code Marketplace.
+# Нужен, когда версия вышла раньше, чем был настроен VSCE_PAT, или публикация упала.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Тег релиза (например, v0.1.1)
+        required: true
+      dry_run:
+        description: Только проверить токен и publisher, не публиковать
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Проверка токена и publisher
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: npx --yes @vscode/vsce verify-pat krimsn
+
+      - name: Скачать .vsix из релиза
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release download "${{ inputs.tag }}" --repo "$GITHUB_REPOSITORY" --pattern "*.vsix"
+
+      - name: Опубликовать
+        if: ${{ !inputs.dry_run }}
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: npx --yes @vscode/vsce publish --no-dependencies --packagePath *.vsix
