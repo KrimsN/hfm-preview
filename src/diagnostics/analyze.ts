@@ -1,6 +1,7 @@
 import MarkdownIt from "markdown-it";
 import { resolveLanguage, suggestLanguage } from "../markdown/languages";
 import type { RuleCode } from "./rules";
+import { typographyFindings } from "./typography";
 
 export interface Finding {
   code: RuleCode;
@@ -51,7 +52,7 @@ function maskForText(line: string): string {
  * Находит конструкции, которые Хабр не поддерживает или ломает (HFM_SPEC.md, «Что важно для плагина»).
  * Чистая функция: работает с текстом, VS Code не нужен.
  */
-export function analyze(text: string): Finding[] {
+export function analyze(text: string, options: { typography?: boolean } = {}): Finding[] {
   const lines = text.split(/\r?\n/);
   const tokens = plain.parse(text, {});
   const findings: Finding[] = [];
@@ -182,6 +183,10 @@ export function analyze(text: string): Finding[] {
     for (const m of bare.matchAll(SINGLE_TILDE)) add("strike-single-tilde", n, m.index, m.index + m[0].length);
     for (const m of bare.matchAll(STRAIGHT_QUOTES)) add("typographic-quotes", n, m.index, m.index + m[0].length);
   });
+
+  if (options.typography ?? true) {
+    findings.push(...typographyFindings(lines.map((line, n) => (skip.has(n) ? "" : maskForText(line)))));
+  }
 
   return findings.sort((a, b) => a.line - b.line || a.start - b.start);
 }

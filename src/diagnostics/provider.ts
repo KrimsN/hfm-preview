@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { analyze } from "./analyze";
 import { formatMessage, severityOf, type Severity } from "./rules";
 import { suggestLanguage } from "../markdown/languages";
+import { FIXABLE_TYPOGRAPHY, typographyFix } from "./typography";
 
 const UPDATE_DEBOUNCE_MS = 300;
 export const SOURCE = "hfm";
@@ -57,7 +58,8 @@ export class HfmDiagnostics implements vscode.Disposable {
       return;
     }
 
-    const diagnostics = analyze(document.getText()).map((finding) => {
+    const typography = vscode.workspace.getConfiguration("hfm.diagnostics").get<boolean>("typography", true);
+    const diagnostics = analyze(document.getText(), { typography }).map((finding) => {
       const range = new vscode.Range(finding.line, finding.start, finding.line, finding.end);
       const diagnostic = new vscode.Diagnostic(
         range,
@@ -84,17 +86,24 @@ export class HfmCodeActions implements vscode.CodeActionProvider {
   provideCodeActions(document: vscode.TextDocument, _range: vscode.Range, context: vscode.CodeActionContext): vscode.CodeAction[] {
     const actions: vscode.CodeAction[] = [];
     for (const diagnostic of context.diagnostics) {
-      if (diagnostic.source !== SOURCE || diagnostic.code !== SYNONYM_CODE) continue;
-      const suggestion = suggestLanguage(document.getText(diagnostic.range));
-      if (!suggestion) continue;
+      if (diagnostic.source !== SOURCE) continue;
+      const replacement = this.replacementFor(document, diagnostic);
+      if (replacement === undefined) continue;
 
-      const action = new vscode.CodeAction(`Заменить на «${suggestion}»`, vscode.CodeActionKind.QuickFix);
+      const action = new vscode.CodeAction(`Заменить на «${replacement}»`, vscode.CodeActionKind.QuickFix);
       action.diagnostics = [diagnostic];
       action.isPreferred = true;
       action.edit = new vscode.WorkspaceEdit();
-      action.edit.replace(document.uri, diagnostic.range, suggestion);
+      action.edit.replace(document.uri, diagnostic.range, replacement);
       actions.push(action);
     }
     return actions;
+  }
+
+  private replacementFor(document: vscode.TextDocument, diagnostic: vscode.Diagnostic): string | undefined {
+    const code = String(diagnostic.code);
+    const text = document.getText(diagnostic.range);
+    if (code === SYNONYM_CODE) return suggestLanguage(text) ?? undefined;
+    return FIXABLE_TYPOGRAPHY.has(code) ? typographyFix(code, text) : undefined;
   }
 }

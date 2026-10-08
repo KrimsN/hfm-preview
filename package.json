@@ -131,6 +131,11 @@
           "default": true,
           "description": "Показывать предупреждения о конструкциях, которые Хабр не поддерживает или ломает."
         },
+        "hfm.diagnostics.typography": {
+          "type": "boolean",
+          "default": true,
+          "description": "Подсказки по типографике Хабра: кавычки, тире, пробелы в числах, даты и т. п. (уровень «подсказка»)."
+        },
         "hfm.preview.theme": {
           "type": "string",
           "enum": [
