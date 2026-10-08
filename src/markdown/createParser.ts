@@ -1,4 +1,10 @@
 import MarkdownIt from "markdown-it";
+import { anchorPlugin } from "./plugins/anchor";
+import { imagesPlugin } from "./plugins/images";
+import { linksPlugin } from "./plugins/links";
+import { mentionsPlugin } from "./plugins/mentions";
+import { headingsPlugin } from "./plugins/headings";
+import { spoilerPlugin } from "./plugins/spoiler";
 
 export type HfmParser = InstanceType<typeof MarkdownIt>;
 
@@ -7,11 +13,19 @@ export type HfmParser = InstanceType<typeof MarkdownIt>;
  * (HFM_SPEC.md, «Главное»). Плагины HFM-элементов подключаются здесь же.
  */
 export function createParser(): HfmParser {
-  return new MarkdownIt({
+  const md = new MarkdownIt({
     // Хабр принимает HTML (spoiler, anchor, details, abbr...); безопасность превью держит CSP webview
     html: true,
     typographer: true,
     linkify: true,
     breaks: false,
   });
+
+  return md
+    .use(headingsPlugin)
+    .use(linksPlugin)
+    .use(mentionsPlugin)
+    .use(imagesPlugin)
+    .use(spoilerPlugin)
+    .use(anchorPlugin);
 }

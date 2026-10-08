@@ -13,7 +13,7 @@ describe("createParser", () => {
   });
 
   it("превращает голый URL в ссылку", () => {
-    expect(md.renderInline("https://habr.com")).toContain('<a href="https://habr.com">');
+    expect(md.renderInline("https://habr.com")).toContain('<a href="https://habr.com" rel="noopener nofollow">');
   });
 
   it("не зачёркивает ~одну тильду~ и не знает task lists", () => {
