@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fencedLines } from "../src/editing/fences";
+import { fencedLines, needsClosingFence, openingFence } from "../src/editing/fences";
 import { continueList, indentItem, outdentItem, type ListAction } from "../src/editing/lists";
 
 /** Применяет правки и возвращает текст с курсором `|`. */
@@ -98,5 +98,41 @@ describe("indentItem / outdentItem (Tab, Shift+Tab)", () => {
     const { lines, line } = at("- a\n- bб|в");
     const action = indentItem(lines, line, 4)!;
     expect(action.cursor).toEqual({ line: 1, col: 6 });
+  });
+});
+
+describe("openingFence / needsClosingFence", () => {
+  it("разбирает открывающее ограждение и отбрасывает лишнюю обратную кавычку", () => {
+    expect(openingFence("```bash")).toEqual({ indent: "", fence: "```", info: "bash" });
+    expect(openingFence("  ~~~rust")).toEqual({ indent: "  ", fence: "~~~", info: "rust" });
+    expect(openingFence("```bash`")).toEqual({ indent: "", fence: "```", info: "bash`" });
+    expect(openingFence("текст")).toBeUndefined();
+  });
+
+  it("находит блок без закрытия", () => {
+    expect(needsClosingFence(["```bash"], 0)).toBe(true);
+    expect(needsClosingFence(["```bash", "ls", "```"], 0)).toBe(false);
+    expect(needsClosingFence(["```bash", "", "текст"], 0)).toBe(true);
+  });
+
+  it("закрытие от следующего блока с языком не считается", () => {
+    expect(needsClosingFence(["```bash", "", "```python", "x = 1", "```"], 0)).toBe(true);
+    expect(needsClosingFence(["```bash", "ls", "```", "", "```python", "x = 1", "```"], 0)).toBe(false);
+  });
+});
+
+describe("needsClosingFence: ниже есть другие блоки кода", () => {
+  const fence = "```";
+
+  it("ниже закрытый блок без языка: наш блок остался открытым", () => {
+    expect(needsClosingFence([`${fence}js`, "", "текст", fence, "код", fence], 0)).toBe(true);
+  });
+
+  it("ниже блок с вложенными ограждениями длиннее нашего", () => {
+    expect(needsClosingFence([`${fence}js`, "", "````", fence, fence, "````"], 0)).toBe(true);
+  });
+
+  it("меняем язык у уже закрытого блока, ниже есть ещё один без языка", () => {
+    expect(needsClosingFence([fence, "код", fence, "", fence, "ещё", fence], 0)).toBe(false);
   });
 });
