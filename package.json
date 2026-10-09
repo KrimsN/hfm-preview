@@ -2,7 +2,7 @@
   "name": "hfm-preview",
   "displayName": "Markdown Preview for Habr",
   "description": "Превью статьи в том виде, в каком её отрисует Хабр, и диагностика неподдерживаемых конструкций",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "license": "MIT",
   "publisher": "krimsn",
   "author": {
