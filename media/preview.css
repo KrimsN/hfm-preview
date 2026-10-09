@@ -82,14 +82,16 @@ body {
 .habr-article p { margin: 0; }
 .habr-article p + p { margin-top: 24px; }
 .habr-article h2 + p,
-.habr-article h3 + p { margin-top: 12px; }
+.habr-article h3 + p,
+.habr-article h4 + p { margin-top: 12px; }
 
 /* Ссылки: в статье без фона и подчёркивания */
 .habr-article a {
   color: var(--habr-accent);
   text-decoration: none;
 }
-.habr-article sup { font-size: 12px; line-height: 0; }
+.habr-article sup,
+.habr-article sub { font-size: 12px; line-height: 0; }
 
 /* Код */
 .habr-article code {
@@ -108,6 +110,8 @@ body {
   border-radius: 4px;
   overflow-x: auto;
   tab-size: 4;
+  font-size: 14px;
+  line-height: 22.4px;
 }
 .habr-article pre code {
   padding: 0;
@@ -119,7 +123,7 @@ body {
 
 /* Цитата */
 .habr-article blockquote {
-  margin: 32px 0 0;
+  margin: 32px 0 12px;
   padding: 0 12px;
   border-left: 4px solid var(--habr-accent);
   /* без этого просвечивает фон цитаты из стилей VS Code, и в светлой теме на тёмной теме редактора она нечитаема */
@@ -132,11 +136,28 @@ body {
   margin: 16px 0 32px;
   padding-left: 32px;
 }
-.habr-article li { margin-bottom: 6px; }
+/* между пунктами 12px (на Хабре li:first-child даёт 6px снизу, остальные 12px сверху — схлопываются в 12) */
+.habr-article li + li { margin-top: 12px; }
+.habr-article li li { line-height: 25.6px; }
+.habr-article li p { line-height: 24px; }
+/* вложенный список прижат к тексту пункта, нижнего отступа нет */
+.habr-article li > ul,
+.habr-article li > ol { margin: 12px 0 0; }
+.habr-article h2 + ul,
+.habr-article h2 + ol,
+.habr-article h3 + ul,
+.habr-article h3 + ol,
+.habr-article h4 + ul,
+.habr-article h4 + ol { margin-top: 24px; }
+
+/* у pre и figure нет нижнего отступа, абзац после них отбивается своим верхним */
+.habr-article pre + p,
+.habr-article figure + p { margin-top: 32px; }
 
 /* Картинки */
 .habr-article figure { margin: 32px 0 0; text-align: center; }
 .habr-article img { max-width: 100%; background: #fff; }
+.habr-article figure img { vertical-align: middle; }
 .habr-article figcaption {
   margin-top: 4px;
   font-size: 13px;
@@ -149,6 +170,7 @@ body {
 /* Таблицы */
 .habr-article .table {
   margin-top: 32px;
+  margin-bottom: 24px;
   overflow-x: auto; /* широкая таблица прокручивается внутри колонки */
 }
 .habr-article table {
@@ -184,7 +206,9 @@ body {
   text-decoration: underline dotted;
   cursor: pointer;
 }
-.habr-article .spoiler__content { padding: 0 36px 16px; line-height: 26px; }
+.habr-article .spoiler__content { margin: 10px 0 8px; padding: 0 36px 16px; line-height: 26px; }
+.habr-article .spoiler__content p,
+.habr-article .spoiler__content li { line-height: 24px; }
 
 /* Аббревиатура и скрытый текст */
 .habr-article abbr.habraabbr {
@@ -214,7 +238,7 @@ body:not([data-theme]).vscode-high-contrast img.formula { filter: invert(0.87); 
   grid-template-areas: "photo name" "photo role";
   column-gap: 12px;
   align-items: center;
-  margin-top: 24px;
+  margin: 24px 0;
 }
 .habr-article .persona__image {
   grid-area: photo;
@@ -226,7 +250,7 @@ body:not([data-theme]).vscode-high-contrast img.formula { filter: invert(0.87); 
 .habr-article .persona__heading {
   grid-area: name;
   margin: 0;
-  font: 500 16px/20px var(--habr-font-heading);
+  font: 500 16px/24px var(--habr-font-heading);
   align-self: end;
 }
 .habr-article .persona__text {
@@ -261,7 +285,11 @@ body:not([data-theme]).vscode-high-contrast img.formula { filter: invert(0.87); 
   font-size: 13px;
   color: var(--habr-muted);
 }
-.habr-article .anchor { display: block; }
+/* якорь ведёт себя как абзац: 24px после абзаца, 12px после заголовка */
+.habr-article .anchor { display: block; margin-top: 24px; }
+.habr-article h2 + .anchor,
+.habr-article h3 + .anchor,
+.habr-article h4 + .anchor { margin-top: 12px; }
 
 /*
  * Подсветка кода. Цвета ключевых слов, имён, строк, макросов и литералов сняты со статьи на Rust;
