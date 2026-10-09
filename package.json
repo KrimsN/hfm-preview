@@ -83,6 +83,21 @@
         "category": "HFM"
       },
       {
+        "command": "hfm.onEnterKey",
+        "title": "Enter в списке: новый пункт",
+        "category": "HFM"
+      },
+      {
+        "command": "hfm.onTabKey",
+        "title": "Tab в списке: вложить пункт",
+        "category": "HFM"
+      },
+      {
+        "command": "hfm.onShiftTabKey",
+        "title": "Shift+Tab в списке: поднять пункт",
+        "category": "HFM"
+      },
+      {
         "command": "hfm.previewThemeLight",
         "title": "Показать в светлой теме",
         "category": "HFM"
@@ -120,6 +135,18 @@
           "when": "editorLangId == hfm"
         },
         {
+          "command": "hfm.onEnterKey",
+          "when": "false"
+        },
+        {
+          "command": "hfm.onTabKey",
+          "when": "false"
+        },
+        {
+          "command": "hfm.onShiftTabKey",
+          "when": "false"
+        },
+        {
           "command": "hfm.previewThemeLight",
           "when": "false"
         },
@@ -151,6 +178,21 @@
       ]
     },
     "keybindings": [
+      {
+        "command": "hfm.onEnterKey",
+        "key": "enter",
+        "when": "editorTextFocus && editorLangId == hfm && !editorReadonly && !editorHasSelection && !editorHasMultipleSelections && !suggestWidgetVisible && !inSnippetMode"
+      },
+      {
+        "command": "hfm.onTabKey",
+        "key": "tab",
+        "when": "editorTextFocus && editorLangId == hfm && !editorReadonly && !editorHasSelection && !editorHasMultipleSelections && !suggestWidgetVisible && !inSnippetMode && !editorTabMovesFocus && !inlineSuggestionVisible"
+      },
+      {
+        "command": "hfm.onShiftTabKey",
+        "key": "shift+tab",
+        "when": "editorTextFocus && editorLangId == hfm && !editorReadonly && !editorHasSelection && !editorHasMultipleSelections && !suggestWidgetVisible && !inSnippetMode && !editorTabMovesFocus"
+      },
       {
         "command": "hfm.openPreviewToSide",
         "key": "ctrl+k v",

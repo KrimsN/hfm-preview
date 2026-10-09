@@ -1,0 +1,90 @@
+import * as vscode from "vscode";
+import languages from "../data/languages.json";
+import { fencedLines } from "./fences";
+import { anchorLinkPrefix, collectAnchors, fenceLanguagePrefix } from "./context";
+
+const TAG_PREFIX = /<([a-z]*)$/;
+
+interface TagSnippet {
+  tag: string;
+  detail: string;
+  /** Блочный тег должен стоять в начале строки */
+  block: boolean;
+  body: string;
+}
+
+const TAG_SNIPPETS: TagSnippet[] = [
+  { tag: "anchor", detail: "Якорь для ссылки внутри статьи", block: true, body: "<anchor>${1:имя}</anchor>" },
+  {
+    tag: "spoiler",
+    detail: "Спойлер",
+    block: true,
+    body: '<spoiler title="${1:Заголовок}">\n\n${0}\n\n</spoiler>',
+  },
+  {
+    tag: "persona",
+    detail: "Блок «персона»",
+    block: true,
+    body: "<persona>\n\n  ![](${1})\n\n  ##### ${2:Имя}\n  ${3:Специальность}\n\n</persona>",
+  },
+  { tag: "oembed", detail: "Вставка видео или соцсети по ссылке", block: true, body: "<oembed>${1:https://}</oembed>" },
+  { tag: "abbr", detail: "Аббревиатура с расшифровкой", block: false, body: '<abbr title="${1:расшифровка}">${2:ABC}</abbr>' },
+];
+
+export class HfmCompletion implements vscode.CompletionItemProvider {
+  static readonly triggerCharacters = ["#", "<", "`", "~"];
+
+  provideCompletionItems(document: vscode.TextDocument, position: vscode.Position): vscode.CompletionItem[] {
+    const prefix = document.lineAt(position.line).text.slice(0, position.character);
+    const lines = document.getText().split(/\r?\n/);
+    const inCode = fencedLines(lines.slice(0, position.line + 1));
+
+    const typedAnchor = anchorLinkPrefix(prefix);
+    if (typedAnchor !== undefined && !inCode[position.line]) {
+      return this.anchors(document, position, typedAnchor);
+    }
+    const typedLanguage = fenceLanguagePrefix(prefix);
+    if (typedLanguage !== undefined && (position.line === 0 || !inCode[position.line - 1])) {
+      return this.languages(position, typedLanguage);
+    }
+    if (!inCode[position.line]) return this.tags(position, prefix);
+    return [];
+  }
+
+  private anchors(document: vscode.TextDocument, position: vscode.Position, typed: string): vscode.CompletionItem[] {
+    const range = new vscode.Range(position.translate(0, -typed.length), position);
+    return collectAnchors(document.getText()).map((anchor, i) => {
+      const item = new vscode.CompletionItem(anchor.name, vscode.CompletionItemKind.Reference);
+      item.detail = anchor.heading ? `Якорь перед заголовком «${anchor.heading}»` : "Якорь";
+      item.range = range;
+      item.sortText = String(i).padStart(4, "0");
+      return item;
+    });
+  }
+
+  private languages(position: vscode.Position, typed: string): vscode.CompletionItem[] {
+    const range = new vscode.Range(position.translate(0, -typed.length), position);
+    return languages.supported.map((name) => {
+      const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.EnumMember);
+      item.detail = "Язык подсветки на Хабре";
+      item.range = range;
+      return item;
+    });
+  }
+
+  private tags(position: vscode.Position, prefix: string): vscode.CompletionItem[] {
+    const match = TAG_PREFIX.exec(prefix);
+    if (!match) return [];
+    const range = new vscode.Range(position.translate(0, -match[0].length), position);
+    const atLineStart = prefix.slice(0, prefix.length - match[0].length).trim() === "";
+
+    return TAG_SNIPPETS.filter((t) => atLineStart || !t.block).map((t) => {
+      const item = new vscode.CompletionItem(`<${t.tag}>`, vscode.CompletionItemKind.Snippet);
+      item.detail = t.detail;
+      item.filterText = `<${t.tag}`;
+      item.insertText = new vscode.SnippetString(t.body);
+      item.range = range;
+      return item;
+    });
+  }
+}
