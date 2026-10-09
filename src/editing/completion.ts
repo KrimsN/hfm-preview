@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import languages from "../data/languages.json";
+import { CLOSE_FENCE_COMMAND } from "./fenceCommands";
 import { fencedLines } from "./fences";
 import { anchorLinkPrefix, collectAnchors, fenceLanguagePrefix } from "./context";
 
@@ -68,6 +69,7 @@ export class HfmCompletion implements vscode.CompletionItemProvider {
       const item = new vscode.CompletionItem(name, vscode.CompletionItemKind.EnumMember);
       item.detail = "Язык подсветки на Хабре";
       item.range = range;
+      item.command = { command: CLOSE_FENCE_COMMAND, title: "Закрыть блок кода", arguments: [position.line] };
       return item;
     });
   }
