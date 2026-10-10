@@ -11,7 +11,7 @@
       "patterns": [
         {
           "name": "meta.tag.habr.hfm entity.name.tag.habr.hfm",
-          "match": "</?(spoiler|anchor|oembed|persona)\b[^>]*>"
+          "match": "</?(spoiler|anchor|oembed|persona)\\b[^>]*>"
         }
       ]
     }
