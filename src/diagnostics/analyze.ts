@@ -1,6 +1,7 @@
-import MarkdownIt from "markdown-it";
 import { ATTR_DROPPED_ON, DROPPED_ATTRS, DROPPED_TAGS, isHabrImageUrl } from "../dialect";
+import { displayFormulaLines, maskInlineFormulas } from "./formulas";
 import { personaBoundary } from "../markdown/persona";
+import { parseTokens } from "../markdown/plain";
 import { resolveLanguage, suggestLanguage } from "../markdown/languages";
 import type { RuleCode } from "./rules";
 import { maskFrontmatter } from "../frontmatter/block";
@@ -18,8 +19,6 @@ export interface Finding {
 }
 
 type Add = (code: RuleCode, line: number, start: number, end: number, args?: Record<string, string>) => void;
-
-const plain = new MarkdownIt({ html: true, linkify: false });
 
 const HAS_SCHEME = /^([a-z][a-z\d+.-]*:|\/\/)/i;
 
@@ -48,7 +47,7 @@ function isRelative(path: string): boolean {
 
 /** Строка без inline-кода, комментариев, тегов и адресов ссылок: для поиска «голого» текста. */
 function maskForText(line: string): string {
-  let masked = blank(line, /`[^`\n]*`/g);
+  let masked = maskInlineFormulas(blank(line, /`[^`\n]*`/g));
   masked = blank(masked, /<!--[\s\S]*?-->/g);
   masked = blank(masked, /<\/?[a-zA-Z][^<>]*>/g);
   return blank(masked, /\]\([^)]*\)/g);
@@ -63,7 +62,7 @@ export function analyze(source: string, options: { typography?: boolean } & Fron
   const frontmatter = parseFrontmatter(source, options);
   const text = maskFrontmatter(source);
   const lines = text.split(/\r?\n/);
-  const tokens = plain.parse(text, {});
+  const tokens = parseTokens(text);
   const findings: Finding[] = [...frontmatter.findings];
   const add: Add = (code, line, start, end, args) => {
     findings.push({ code, line, start, end, ...(args ? { args } : {}) });
@@ -125,6 +124,9 @@ export function analyze(source: string, options: { typography?: boolean } & Fron
     }
   }
 
+  // многострочные формулы $$ … $$ — не разметка
+  for (const line of displayFormulaLines(lines)) skip.add(line);
+
   // единственный «#» при остальных заголовках глубже: автор, скорее всего, поставил им название статьи
   const topLevel = bodyHeadings.filter((h) => h.level === 1);
   if (topLevel.length === 1 && bodyHeadings.length > 1) wholeLine("heading-single-h1", topLevel[0]!.line);
@@ -139,7 +141,7 @@ export function analyze(source: string, options: { typography?: boolean } & Fron
   // --- построчные правила
   lines.forEach((line, n) => {
     if (skip.has(n)) return;
-    const code = blank(line, /`[^`\n]*`/g);
+    const code = maskInlineFormulas(blank(line, /`[^`\n]*`/g));
 
     for (const m of code.matchAll(IMAGE_LINK)) add("image-link", n, m.index, m.index + m[0].length);
 

@@ -46,7 +46,7 @@ function dropAutoClosedBacktick(event: vscode.TextDocumentChangeEvent): void {
   // к моменту события курсор ещё не переехал, поэтому позицию берём из самой вставки:
   // после неё курсор встанет сразу за набранной кавычкой
   const { line, character } = change.range.start;
-  const indent = /^ {0,3}/.exec(document.lineAt(line).text)![0].length;
+  const indent = /^[ \t]*/.exec(document.lineAt(line).text)![0].length;
   const cursor = character + 1;
   if (document.lineAt(line).text.slice(indent) !== "````" || cursor !== indent + 3) return;
 

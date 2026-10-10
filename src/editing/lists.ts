@@ -56,9 +56,11 @@ const markerWithNumber = (item: ListLine, number: number): string =>
 /** Пункт списка под курсором, если с ним можно работать: вне блока кода и правее маркера. */
 function itemAt(lines: string[], line: number, col: number): ListLine | undefined {
   const text = lines[line];
-  if (text === undefined || fencedLines(lines)[line]) return undefined;
+  if (text === undefined) return undefined;
+  // скан блоков кода дорогой, а Enter и Tab нажимают в основном вне списков: сначала дешёвая проверка строки
   const item = parse(text);
-  return item && col >= item.contentStart ? item : undefined;
+  if (!item || col < item.contentStart) return undefined;
+  return fencedLines(lines.slice(0, line + 1))[line] ? undefined : item;
 }
 
 /** Номер для пункта, который встаёт на ширину `width` прямо под строкой `line`. */

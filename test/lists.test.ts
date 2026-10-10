@@ -32,6 +32,20 @@ describe("fencedLines", () => {
   it("отмечает блоки кода вместе с ограждениями", () => {
     expect(fencedLines(["a", "```js", "- x", "```", "b", "~~~", "c"])).toEqual([false, true, true, true, false, true, true]);
   });
+
+  it("видит блок кода в пункте вложенного списка", () => {
+    const lines = ["- a", "  - b", "    ```js", "    code", "    ```", "- c"];
+    expect(fencedLines(lines)).toEqual([false, false, true, true, true, false]);
+  });
+
+  it("ограждение с отступом 4 вне списка — это блок кода с отступом", () => {
+    expect(fencedLines(["текст", "", "    ```js", "    x"])).toEqual([false, false, false, false]);
+  });
+
+  it("закрывающее ограждение нужно и для блока в списке", () => {
+    expect(needsClosingFence(["- a", "  - b", "    ```js", "    code"], 2)).toBe(true);
+    expect(needsClosingFence(["- a", "  - b", "    ```js", "    code", "    ```"], 2)).toBe(false);
+  });
 });
 
 describe("continueList (Enter)", () => {
