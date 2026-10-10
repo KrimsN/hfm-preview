@@ -92,12 +92,53 @@
     });
   });
 
+  // --- обновление содержимого
+
+  // Номера строк меняются у всего, что ниже правки, но сам блок остался прежним
+  const withoutLines = (node) =>
+    node.nodeType === Node.ELEMENT_NODE ? node.outerHTML.replace(/ data-line="\d+"/g, "") : node.textContent;
+
+  /** Переносит актуальные номера строк на уцелевший блок (вместе с вложенными элементами). */
+  const syncLines = (kept, fresh) => {
+    if (kept.nodeType !== Node.ELEMENT_NODE) return;
+    const pairs = [[kept, fresh], ...[...kept.querySelectorAll("[data-line]")].map((el, i) => [el, fresh.querySelectorAll("[data-line]")[i]])];
+    for (const [from, to] of pairs) if (to?.dataset.line !== undefined) from.dataset.line = to.dataset.line;
+  };
+
+  /**
+   * Заменяет только изменившиеся блоки верхнего уровня: картинки и формулы выше и ниже правки
+   * не перерисовываются, выделение и прокрутка сохраняются.
+   */
+  const patchContent = (html) => {
+    const template = document.createElement("template");
+    template.innerHTML = html;
+    const fresh = [...template.content.childNodes];
+    const old = [...content.childNodes];
+    const oldSigs = old.map(withoutLines);
+    const freshSigs = fresh.map(withoutLines);
+
+    let head = 0;
+    while (head < old.length && head < fresh.length && oldSigs[head] === freshSigs[head]) head++;
+    let oldEnd = old.length;
+    let freshEnd = fresh.length;
+    while (oldEnd > head && freshEnd > head && oldSigs[oldEnd - 1] === freshSigs[freshEnd - 1]) {
+      oldEnd--;
+      freshEnd--;
+    }
+
+    for (let i = 0; i < head; i++) syncLines(old[i], fresh[i]);
+    for (let i = oldEnd, j = freshEnd; i < old.length; i++, j++) syncLines(old[i], fresh[j]);
+    for (let i = head; i < oldEnd; i++) old[i].remove();
+    const before = old[oldEnd] ?? null;
+    for (let i = head; i < freshEnd; i++) content.insertBefore(fresh[i], before);
+  };
+
   // --- сообщения от расширения
 
   window.addEventListener("message", (event) => {
     const message = event.data;
     if (message?.type === "update" && content) {
-      content.innerHTML = message.html;
+      patchContent(message.html);
     } else if (message?.type === "theme") {
       if (message.theme === "auto") body.removeAttribute("data-theme");
       else body.setAttribute("data-theme", message.theme);

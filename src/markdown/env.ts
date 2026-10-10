@@ -1,12 +1,12 @@
 /** Окружение рендера: то, что парсер не может узнать из самого текста. */
 export type HfmEnv = {
-  /** Превращает относительный путь картинки в адрес, доступный webview. */
   /** Добавлять блокам `data-line` для синхронизации прокрутки превью. */
   sourceLines?: boolean;
+  /** Превращает относительный путь картинки в адрес, доступный webview. */
   resolveImage?: (src: string) => string | undefined;
 };
 
-const HAS_SCHEME = /^([a-z][a-z\d+.-]*:|\/\/)/i;
+export const HAS_SCHEME = /^([a-z][a-z\d+.-]*:|\/\/)/i;
 
 export function isRelativeSrc(src: string): boolean {
   return src !== "" && !HAS_SCHEME.test(src);

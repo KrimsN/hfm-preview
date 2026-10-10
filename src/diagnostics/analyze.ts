@@ -3,24 +3,17 @@ import { displayFormulaLines, maskInlineFormulas } from "./formulas";
 import { personaBoundary } from "../markdown/persona";
 import { parseTokens } from "../markdown/plain";
 import { resolveLanguage, suggestLanguage } from "../markdown/languages";
+import { HAS_SCHEME } from "../markdown/env";
 import type { RuleCode } from "./rules";
 import { maskFrontmatter } from "../frontmatter/block";
 import { parseFrontmatter, type FrontmatterOptions } from "../frontmatter/parse";
+import { blank } from "./text";
+import type { Finding } from "./types";
 import { typographyFindings } from "./typography";
 
-export interface Finding {
-  code: RuleCode;
-  /** Строка, с нуля */
-  line: number;
-  /** Столбцы, с нуля; end не включается */
-  start: number;
-  end: number;
-  args?: Record<string, string>;
-}
+export type { Finding };
 
 type Add = (code: RuleCode, line: number, start: number, end: number, args?: Record<string, string>) => void;
-
-const HAS_SCHEME = /^([a-z][a-z\d+.-]*:|\/\/)/i;
 
 const IMAGE = /!\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+"[^"]*")?\s*\)/g;
 const IMAGE_LINK = /\[!\[[^\]]*\]\([^)]*\)\]\([^)]*\)/g;
@@ -37,9 +30,6 @@ const ANCHOR = /<anchor>\s*([^<]+?)\s*<\/anchor>/g;
 const EMOJI = /(?<![\w:/])(:[a-z][a-z0-9_+-]*:)(?![\w:])/g;
 const SINGLE_TILDE = /(?<![~\\])~(?!~)[^\s~](?:[^~\n]*[^\s~\\])?~(?!~)/g;
 const STRAIGHT_QUOTES = /"[^"\n]+"/g;
-
-/** Заменяет совпадение пробелами, сохраняя длину строки и позиции. */
-const blank = (text: string, re: RegExp): string => text.replace(re, (m) => " ".repeat(m.length));
 
 function isRelative(path: string): boolean {
   return path !== "" && !path.startsWith("#") && !path.startsWith("/") && !HAS_SCHEME.test(path);

@@ -1,7 +1,8 @@
 import MarkdownIt from "markdown-it";
 import emoji from "../data/emoji.json";
 import { suggestLanguage } from "../markdown/languages";
-import { typographyFix } from "./typography";
+import type { RuleCode } from "./rules";
+import { MONTHS_GENITIVE, TYPOGRAPHY_FIX_CODES, typographyFix } from "./typography";
 
 /** Правка одной строки: заменить `[start, end)` на `text`. */
 export interface LineFix {
@@ -10,14 +11,6 @@ export interface LineFix {
   text: string;
   title: string;
 }
-
-const MONTHS = [
-  "января", "февраля", "марта", "апреля", "мая", "июня",
-  "июля", "августа", "сентября", "октября", "ноября", "декабря",
-];
-const TYPOGRAPHY_CODES = new Set([
-  "dash-hyphen", "dash-range", "number-unit", "number-thousands", "ordinal-ending", "quotes-latin",
-]);
 
 const inline = new MarkdownIt({ html: true });
 
@@ -41,10 +34,10 @@ function replace(start: number, end: number, text: string, title?: string): Line
  * Быстрое исправление для диагностики или `undefined`, если автоисправления нет.
  * Чистая функция над строкой, где найдена проблема.
  */
-export function fixFor(code: string, line: string, start: number, end: number): LineFix | undefined {
+export function fixFor(code: RuleCode, line: string, start: number, end: number): LineFix | undefined {
   const text = line.slice(start, end);
 
-  if (TYPOGRAPHY_CODES.has(code)) {
+  if (TYPOGRAPHY_FIX_CODES.has(code)) {
     const fixed = typographyFix(code, text);
     return fixed === undefined ? undefined : replace(start, end, fixed);
   }
@@ -87,7 +80,7 @@ export function fixFor(code: string, line: string, start: number, end: number): 
     case "date-numeric": {
       const dotted = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(text);
       if (dotted) {
-        const month = MONTHS[Number(dotted[2]) - 1];
+        const month = MONTHS_GENITIVE[Number(dotted[2]) - 1];
         return month ? replace(start, end, `${Number(dotted[1])} ${month} ${dotted[3]}`) : undefined;
       }
       const zero = /^0(\d)(\s.+)$/.exec(text);

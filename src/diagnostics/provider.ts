@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { analyze } from "./analyze";
-import { formatMessage, severityOf, type Severity } from "./rules";
+import { formatMessage, isRuleCode, severityOf, type Severity } from "./rules";
 import { fixFor } from "./fixes";
 import { CoverChecker } from "../frontmatter/coverCheck";
 
@@ -94,10 +94,11 @@ export class HfmCodeActions implements vscode.CodeActionProvider {
   provideCodeActions(document: vscode.TextDocument, _range: vscode.Range, context: vscode.CodeActionContext): vscode.CodeAction[] {
     const actions: vscode.CodeAction[] = [];
     for (const diagnostic of context.diagnostics) {
-      if (diagnostic.source !== SOURCE || !diagnostic.range.isSingleLine) continue;
+      const code = String(diagnostic.code);
+      if (diagnostic.source !== SOURCE || !diagnostic.range.isSingleLine || !isRuleCode(code)) continue;
 
       const line = diagnostic.range.start.line;
-      const fix = fixFor(String(diagnostic.code), document.lineAt(line).text, diagnostic.range.start.character, diagnostic.range.end.character);
+      const fix = fixFor(code, document.lineAt(line).text, diagnostic.range.start.character, diagnostic.range.end.character);
       if (!fix) continue;
 
       const action = new vscode.CodeAction(fix.title, vscode.CodeActionKind.QuickFix);

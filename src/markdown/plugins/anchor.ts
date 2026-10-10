@@ -1,6 +1,6 @@
 import type { HfmParser } from "../createParser";
+import { ANCHOR_LINE } from "../anchorSyntax";
 
-const ANCHOR_LINE = /^<anchor>([^<\n]+)<\/anchor>[ \t]*$/;
 
 /** `<anchor>name</anchor>` отдельной строкой → `<a class="anchor">` вне абзаца. */
 export function anchorPlugin(md: HfmParser): void {

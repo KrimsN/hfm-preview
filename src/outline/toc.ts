@@ -1,3 +1,4 @@
+import { ANCHOR_LINE } from "../markdown/anchorSyntax";
 import { findFrontmatter } from "../frontmatter/block";
 import { extractHeadings, type Heading } from "./headings";
 
@@ -18,7 +19,6 @@ export interface TocOptions {
 export const TOC_START = "<!-- toc -->";
 export const TOC_END = "<!-- /toc -->";
 
-const ANCHOR_LINE = /^<anchor>([^<\n]+)<\/anchor>[ \t]*$/;
 const ANCHOR_ANY = /<anchor>([^<\n]+)<\/anchor>/g;
 /** Хабр превращает заголовки глубже третьего уровня в `h3`, оглавление считает их так же. */
 const MAX_TOC_LEVEL = 3;

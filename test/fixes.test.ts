@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { analyze } from "../src/diagnostics/analyze";
 import { fixFor } from "../src/diagnostics/fixes";
+import type { RuleCode } from "../src/diagnostics/rules";
 
 /** Применяет быстрое исправление первой найденной диагностики с указанным кодом. */
-function apply(text: string, code: string): string | undefined {
+function apply(text: string, code: RuleCode): string | undefined {
   const lines = text.split("\n");
   const finding = analyze(text).find((f) => f.code === code);
   if (!finding) throw new Error(`диагностика ${code} не найдена`);

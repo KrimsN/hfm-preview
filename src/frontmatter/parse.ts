@@ -1,5 +1,5 @@
 import { isMap, isScalar, isSeq, parseDocument, type Node, type Scalar } from "yaml";
-import type { Finding } from "../diagnostics/analyze";
+import type { Finding } from "../diagnostics/types";
 import type { RuleCode } from "../diagnostics/rules";
 import data from "../data/frontmatter.json";
 import { findFrontmatter, type FrontmatterBlock } from "./block";

@@ -37,7 +37,7 @@ function parse(line: string): ListLine | undefined {
   if (RULE.test(line)) return undefined;
   const m = ITEM.exec(line);
   if (!m) return undefined;
-  const [, indent, marker, digits, delimiter, spacing, content] = m as unknown as string[];
+  const [, indent, marker, digits, delimiter, spacing, content] = m;
   return {
     indent: indent!,
     marker: marker!,
