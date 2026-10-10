@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { analyze } from "../src/diagnostics/analyze";
-import { formatMessage } from "../src/diagnostics/rules";
+import { effectiveSeverity, formatMessage } from "../src/diagnostics/rules";
 
 const codes = (text: string): string[] => analyze(text).map((f) => f.code);
 
@@ -117,5 +117,64 @@ describe("analyze: что не трогаем", () => {
 
   it("корректная статья даёт пустой результат", () => {
     expect(codes("# Заголовок\n\nТекст со [ссылкой](https://habr.com).\n\n- один\n- два\n")).toEqual([]);
+  });
+});
+
+describe("analyze: формулы не считаются разметкой", () => {
+  it("тильда и кавычки внутри $…$ не дают предупреждений", () => {
+    expect(codes("Тут $x ~y~ z$ формула")).toEqual([]);
+    expect(codes('Тут $f("a")$ формула')).toEqual([]);
+  });
+
+  it("многострочный блок $$ … $$ пропускается целиком", () => {
+    expect(codes("$$\na ~b~ c\n:smile:\n$$")).toEqual([]);
+  });
+
+  it("текст рядом с формулой по-прежнему проверяется", () => {
+    expect(codes("~зачёркнуто~ и $x$")).toEqual(["strike-single-tilde"]);
+  });
+
+  it("одиночный доллар (цена) ничего не маскирует", () => {
+    expect(codes("Стоит $5, а ~это~ нет")).toEqual(["strike-single-tilde"]);
+  });
+});
+
+describe("effectiveSeverity: настройка hfm.diagnostics.rules", () => {
+  it("по умолчанию берёт уровень из данных", () => {
+    expect(effectiveSeverity("image-external")).toBe("warning");
+  });
+
+  it("off отключает правило, остальные значения меняют уровень", () => {
+    expect(effectiveSeverity("image-external", { "image-external": "off" })).toBeUndefined();
+    expect(effectiveSeverity("image-external", { "image-external": "error" })).toBe("error");
+  });
+
+  it("мусор в настройке игнорируется", () => {
+    expect(effectiveSeverity("image-external", { "image-external": 5 })).toBe("warning");
+    expect(effectiveSeverity("image-external", { constructor: "off" })).toBe("warning");
+  });
+});
+
+describe("analyze: граничные случаи", () => {
+  it("пустой документ и документ из пробелов", () => {
+    expect(codes("")).toEqual([]);
+    expect(codes("   \n\n")).toEqual([]);
+  });
+
+  it("CRLF и BOM не сдвигают позиции", () => {
+    const text = "\uFEFF---\r\nЗаголовок: A\r\n---\r\n\r\n![](./a.png)\r\n";
+    const found = analyze(text).find((f) => f.code === "image-relative");
+    expect(found).toMatchObject({ line: 4, start: 4, end: 11 });
+  });
+
+  it("незакрытый блок кода не роняет разбор", () => {
+    expect(() => analyze("```javascript\n![](./a.png)\n")).not.toThrow();
+    expect(codes("```javascript\n![](./a.png)\n")).toEqual([]);
+  });
+
+  it("строка из тысяч тегов без атрибутов разбирается быстро", () => {
+    const started = performance.now();
+    analyze("<div ".repeat(20_000));
+    expect(performance.now() - started).toBeLessThan(1500);
   });
 });

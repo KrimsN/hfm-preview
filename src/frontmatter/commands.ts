@@ -1,15 +1,9 @@
-import { existsSync } from "node:fs";
 import * as vscode from "vscode";
 import { findFrontmatter } from "./block";
 import { resolveCover } from "./cover";
+import { exists } from "./coverCheck";
 import { parseFrontmatter } from "./parse";
 import { frontmatterTemplate, TEMPLATE_CURSOR } from "./template";
-
-/** Проверка существования КДПВ для диагностики; для не файловых документов не проверяем. */
-export function coverExistsFor(document: vscode.TextDocument): ((path: string) => boolean) | undefined {
-  if (document.uri.scheme !== "file") return undefined;
-  return (path) => existsSync(resolveCover(document.uri.fsPath, path));
-}
 
 function coverUri(document: vscode.TextDocument): vscode.Uri | undefined {
   const cover = parseFrontmatter(document.getText()).meta.cover;
@@ -42,7 +36,7 @@ async function goToCover(editor: vscode.TextEditor): Promise<void> {
     void vscode.window.showInformationMessage("Путь к КДПВ не указан: добавьте поле «КДПВ» во frontmatter.");
     return;
   }
-  if (!existsSync(uri.fsPath)) {
+  if (!(await exists(uri))) {
     void vscode.window.showWarningMessage(`Файл КДПВ не найден: ${uri.fsPath}`);
     return;
   }

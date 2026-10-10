@@ -1,4 +1,5 @@
-import type { Finding } from "./analyze";
+import { blank } from "./text";
+import type { Finding } from "./types";
 import type { RuleCode } from "./rules";
 
 /** Типографика по https://habr.com/ru/docs/authors/typographics/ — только то, что можно проверить по тексту. */
@@ -32,8 +33,12 @@ const ORDINAL = new RegExp(
   String.raw`(?<![\w.,-])(\d+)-(${Object.keys(ORDINAL_ENDINGS).join("|")})(?![\wА-Яа-яЁё])`,
   "g",
 );
-const MONTHS =
-  "января|февраля|марта|апреля|мая|июня|июля|августа|сентября|октября|ноября|декабря";
+/** Названия месяцев в родительном падеже по порядку: индекс = номер месяца − 1 */
+export const MONTHS_GENITIVE = [
+  "января", "февраля", "марта", "апреля", "мая", "июня",
+  "июля", "августа", "сентября", "октября", "ноября", "декабря",
+];
+const MONTHS = MONTHS_GENITIVE.join("|");
 const DATE_DOTTED = /(?<![\w.\/-])(?:0?[1-9]|[12]\d|3[01])\.(?:0?[1-9]|1[0-2])\.(?:\d{4}|\d{2})(?![\w.\/-])/g;
 const DATE_SLASHED = /(?<![\w.\/-])(?:0?[1-9]|1[0-2])\/(?:0?[1-9]|[12]\d|3[01])\/\d{4}(?![\w.\/-])/g;
 const DATE_LEADING_ZERO = new RegExp(String.raw`(?<![\w.,-])0[1-9]\s(?:${MONTHS})(?![А-Яа-яЁё])`, "g");
@@ -41,7 +46,6 @@ const INITIALS_FIRST = /(?<![А-ЯЁа-яё])[А-ЯЁ]\.\s?[А-ЯЁ]\.\s?[А-Я�
 const INITIALS_LAST = /(?<![А-ЯЁа-яё])[А-ЯЁ][а-яё]+\s[А-ЯЁ]\.\s?[А-ЯЁ]\.(?![А-ЯЁа-яё])/g;
 const BLOCK_START = /^\s*(?:[-+*]|\d+[.)])\s|^\s*#{1,6}\s|^\s*\|/;
 
-const blank = (text: string, re: RegExp): string => text.replace(re, (m) => " ".repeat(m.length));
 
 /** Оставляет только прозу: без адресов и формул. Код, теги и адреса ссылок уже закрыты вызывающим. */
 function prose(masked: string): string {
@@ -117,8 +121,13 @@ export function typographyFindings(masked: string[]): Finding[] {
   return findings;
 }
 
+/** Правила типографики, у которых есть автоисправление. */
+export const TYPOGRAPHY_FIX_CODES: ReadonlySet<RuleCode> = new Set<RuleCode>([
+  "dash-hyphen", "dash-range", "number-unit", "number-thousands", "ordinal-ending", "quotes-latin",
+]);
+
 /** Текст, на который можно заменить фрагмент, помеченный правилом; undefined — автоисправления нет. */
-export function typographyFix(code: string, text: string): string | undefined {
+export function typographyFix(code: RuleCode, text: string): string | undefined {
   switch (code) {
     case "dash-hyphen":
       return "—";

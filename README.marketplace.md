@@ -26,6 +26,7 @@
 |---|---|---|
 | `hfm.diagnostics.enabled` | `true` | Предупреждения о конструкциях, которые Хабр не поддерживает или ломает |
 | `hfm.diagnostics.typography` | `true` | Подсказки по типографике Хабра |
+| `hfm.diagnostics.rules` | `{}` | Уровень отдельных правил по коду: `off`, `error`, `warning`, `information`, `hint`. Например, `{ "image-external": "off" }` |
 | `hfm.toc.transliterate` | `true` | Имена якорей латиницей (`kak-eto-rabotaet`), чтобы ссылка не превращалась в `%D0%BA…` при копировании |
 | `hfm.preview.theme` | `auto` | Тема превью: `auto` (как в VS Code), `light`, `dark` |
 | `hfm.preview.scrollSync` | `true` | Синхронизация прокрутки превью и редактора |

@@ -1,3 +1,4 @@
+import { ANCHOR_LINE } from "../markdown/anchorSyntax";
 import { extractHeadings } from "../outline/headings";
 import { fencedLines } from "./fences";
 
@@ -7,9 +8,8 @@ export interface AnchorInfo {
   heading?: string;
 }
 
-const ANCHOR_LINE = /^<anchor>([^<\n]+)<\/anchor>[ \t]*$/;
 const ANCHOR_LINK_PREFIX = /\]\(#([^)\s]*)$/;
-const FENCE_LANGUAGE_PREFIX = /^ {0,3}(?:`{3,}|~{3,})([^\s`]*)$/;
+const FENCE_LANGUAGE_PREFIX = /^[ \t]*(?:`{3,}|~{3,})([^\s`]*)$/;
 
 /** Якоря документа в порядке появления; якоря в блоках кода не считаются. */
 export function collectAnchors(text: string): AnchorInfo[] {

@@ -34,24 +34,41 @@ const TAG_SNIPPETS: TagSnippet[] = [
   { tag: "abbr", detail: "Аббревиатура с расшифровкой", block: false, body: '<abbr title="${1:расшифровка}">${2:ABC}</abbr>' },
 ];
 
+/** Frontmatter длиннее этого не бывает; дальше закрывающую `---` не ищем, чтобы не сканировать весь документ. */
+const MAX_FRONTMATTER_LINES = 100;
+
+/** Строки YAML, если курсор стоит внутри frontmatter; иначе `undefined`. */
+function frontmatterAround(document: vscode.TextDocument, position: vscode.Position): string[] | undefined {
+  if (position.line === 0 || !/^\uFEFF?---[ \t]*$/.test(document.lineAt(0).text)) return undefined;
+  const head = Array.from(
+    { length: Math.min(document.lineCount, Math.max(position.line + 1, MAX_FRONTMATTER_LINES)) },
+    (_, i) => document.lineAt(i).text,
+  );
+  const block = findFrontmatter(head);
+  if (!block || position.line <= block.startLine || position.line >= block.endLine) return undefined;
+  return head.slice(block.startLine + 1, block.endLine);
+}
+
 export class HfmCompletion implements vscode.CompletionItemProvider {
   static readonly triggerCharacters = ["#", "<", "`", "~", " "];
 
   provideCompletionItems(document: vscode.TextDocument, position: vscode.Position): vscode.CompletionItem[] {
     const prefix = document.lineAt(position.line).text.slice(0, position.character);
-    const lines = document.getText().split(/\r?\n/);
 
-    const block = findFrontmatter(lines);
-    if (block && position.line > block.startLine && position.line < block.endLine) {
-      return this.frontmatter(position, prefix, lines.slice(block.startLine + 1, block.endLine));
-    }
-    const inCode = fencedLines(lines.slice(0, position.line + 1));
+    const block = frontmatterAround(document, position);
+    if (block) return this.frontmatter(position, prefix, block);
 
+    // подсказки срабатывают на каждый пробел: сначала дешёвые проверки по строке, и только потом скан документа
     const typedAnchor = anchorLinkPrefix(prefix);
+    const typedLanguage = fenceLanguagePrefix(prefix);
+    if (typedAnchor === undefined && typedLanguage === undefined && !TAG_PREFIX.test(prefix)) return [];
+
+    const upToCursor = Array.from({ length: position.line + 1 }, (_, i) => document.lineAt(i).text);
+    const inCode = fencedLines(upToCursor);
+
     if (typedAnchor !== undefined && !inCode[position.line]) {
       return this.anchors(document, position, typedAnchor);
     }
-    const typedLanguage = fenceLanguagePrefix(prefix);
     if (typedLanguage !== undefined && (position.line === 0 || !inCode[position.line - 1])) {
       return this.languages(position, typedLanguage);
     }

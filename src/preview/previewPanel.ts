@@ -97,6 +97,13 @@ export class PreviewPanel {
     });
   }
 
+  /** Закрывает все панели при деактивации расширения. */
+  static disposeAll(): void {
+    for (const panel of [...PreviewPanel.panels.values()]) panel.panel.dispose();
+    PreviewPanel.panels.clear();
+    PreviewPanel.current = undefined;
+  }
+
   setTheme(theme: PreviewTheme): void {
     this.themeOverride = theme;
     void this.panel.webview.postMessage({ type: "theme", theme });
@@ -105,7 +112,7 @@ export class PreviewPanel {
   private constructor(
     private readonly context: vscode.ExtensionContext,
     private readonly parser: HfmParser,
-    private readonly document: vscode.TextDocument,
+    private document: vscode.TextDocument,
     private readonly panel: vscode.WebviewPanel,
     private readonly key: string,
   ) {
@@ -113,9 +120,16 @@ export class PreviewPanel {
 
     this.disposables.push(
       vscode.workspace.onDidChangeTextDocument((e) => {
-        if (e.document.uri.toString() === this.key) {
-          this.scheduleUpdate();
-        }
+        // сохранение и смена dirty-флага приходят без правок: перерисовывать нечего
+        if (e.document.uri.toString() !== this.key || e.contentChanges.length === 0) return;
+        this.document = e.document;
+        this.scheduleUpdate();
+      }),
+      // файл закрыли и открыли снова: VS Code создал новый TextDocument, старый объект застыл
+      vscode.workspace.onDidOpenTextDocument((document) => {
+        if (document.uri.toString() !== this.key) return;
+        this.document = document;
+        this.scheduleUpdate();
       }),
       vscode.workspace.onDidChangeConfiguration((e) => {
         if (e.affectsConfiguration("hfm.preview.theme")) {
@@ -125,7 +139,11 @@ export class PreviewPanel {
       }),
       vscode.window.onDidChangeTextEditorVisibleRanges((e) => this.onEditorScrolled(e)),
       this.panel.webview.onDidReceiveMessage((message: { type?: string; line?: number }) => {
-        if (message.type === "ready") this.syncFromEditor();
+        if (message.type === "ready") {
+          // скрытый webview без retainContextWhenHidden грузит исходный html заново: догоняем текущим текстом
+          this.pushUpdate();
+          this.syncFromEditor();
+        }
         else if (message.type === "scroll" && typeof message.line === "number") this.revealInEditor(message.line);
       }),
       this.panel.onDidChangeViewState((e) => {
@@ -176,12 +194,17 @@ export class PreviewPanel {
 
   private scheduleUpdate(): void {
     clearTimeout(this.updateTimer);
-    this.updateTimer = setTimeout(() => {
-      void this.panel.webview.postMessage({
-        type: "update",
-        html: this.render(),
-      });
-    }, UPDATE_DEBOUNCE_MS);
+    this.updateTimer = setTimeout(() => this.pushUpdate(), UPDATE_DEBOUNCE_MS);
+  }
+
+  private pushUpdate(): void {
+    this.document = this.liveDocument();
+    void this.panel.webview.postMessage({ type: "update", html: this.render() });
+  }
+
+  /** Актуальный объект документа: после закрытия и повторного открытия файла он новый. */
+  private liveDocument(): vscode.TextDocument {
+    return vscode.workspace.textDocuments.find((d) => d.uri.toString() === this.key) ?? this.document;
   }
 
   private theme(): PreviewTheme {
@@ -249,7 +272,7 @@ export class PreviewSerializer implements vscode.WebviewPanelSerializer {
   ) {}
 
   async deserializeWebviewPanel(panel: vscode.WebviewPanel, state: { uri?: string } | undefined): Promise<void> {
-    this.log.info(`восстановление панели «${panel.title}», состояние: ${JSON.stringify(state)}`);
+    this.log.debug(`восстановление панели «${panel.title}», состояние: ${JSON.stringify(state)}`);
     if (!state?.uri) {
       this.log.warn("в состоянии нет адреса документа, вкладка закрыта");
       panel.dispose();
