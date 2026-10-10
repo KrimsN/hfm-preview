@@ -3,10 +3,20 @@
   "name": "Habr Flavored Markdown",
   "scopeName": "text.html.hfm",
   "patterns": [
+    { "include": "#frontmatter" },
     { "include": "#habr-tags" },
     { "include": "text.html.markdown" }
   ],
   "repository": {
+    "frontmatter": {
+      "name": "meta.embedded.block.frontmatter.hfm",
+      "begin": "\\A---[ \\t]*$",
+      "end": "^(?:---|\\.\\.\\.)[ \\t]*$",
+      "beginCaptures": { "0": { "name": "punctuation.definition.frontmatter.hfm" } },
+      "endCaptures": { "0": { "name": "punctuation.definition.frontmatter.hfm" } },
+      "contentName": "source.yaml",
+      "patterns": [{ "include": "source.yaml" }]
+    },
     "habr-tags": {
       "patterns": [
         {

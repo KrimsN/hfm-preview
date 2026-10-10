@@ -1,6 +1,8 @@
 import MarkdownIt from "markdown-it";
 import { resolveLanguage, suggestLanguage } from "../markdown/languages";
 import type { RuleCode } from "./rules";
+import { maskFrontmatter } from "../frontmatter/block";
+import { parseFrontmatter, type FrontmatterOptions } from "../frontmatter/parse";
 import { typographyFindings } from "./typography";
 
 export interface Finding {
@@ -52,10 +54,13 @@ function maskForText(line: string): string {
  * Находит конструкции, которые Хабр не поддерживает или ломает (HFM_SPEC.md, «Что важно для плагина»).
  * Чистая функция: работает с текстом, VS Code не нужен.
  */
-export function analyze(text: string, options: { typography?: boolean } = {}): Finding[] {
+export function analyze(source: string, options: { typography?: boolean } & FrontmatterOptions = {}): Finding[] {
+  // frontmatter проверяется отдельно, а остальные правила видят его пустые строки: номера строк не сдвигаются
+  const frontmatter = parseFrontmatter(source, options);
+  const text = maskFrontmatter(source);
   const lines = text.split(/\r?\n/);
   const tokens = plain.parse(text, {});
-  const findings: Finding[] = [];
+  const findings: Finding[] = [...frontmatter.findings];
   const add: Add = (code, line, start, end, args) => {
     findings.push({ code, line, start, end, ...(args ? { args } : {}) });
   };
@@ -74,6 +79,7 @@ export function analyze(text: string, options: { typography?: boolean } = {}): F
   // --- структурные правила по токенам
   let quoteDepth = 0;
   let inPersona = false; // заголовок ##### внутри <persona> — часть разметки персоны
+  const bodyHeadings: { level: number; line: number }[] = [];
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i]!;
     const map = token.map;
@@ -97,6 +103,7 @@ export function analyze(text: string, options: { typography?: boolean } = {}): F
       if (quoteDepth > 0) {
         wholeLine("quote-heading", map[0]);
       } else {
+        bodyHeadings.push({ level: Number(token.tag.slice(1)), line: map[0] });
         if (Number(token.tag.slice(1)) >= 4) wholeLine("heading-level", map[0]);
         const children = tokens[i + 1]?.children ?? [];
         const formatted = children.some((c) =>
@@ -115,6 +122,10 @@ export function analyze(text: string, options: { typography?: boolean } = {}): F
       if (hasImage && hasText) wholeLine("image-in-paragraph", map[0]);
     }
   }
+
+  // единственный «#» при остальных заголовках глубже: автор, скорее всего, поставил им название статьи
+  const topLevel = bodyHeadings.filter((h) => h.level === 1);
+  if (topLevel.length === 1 && bodyHeadings.length > 1) wholeLine("heading-single-h1", topLevel[0]!.line);
 
   // --- якоря документа
   const anchors = new Set<string>();

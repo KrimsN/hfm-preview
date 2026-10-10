@@ -2,6 +2,8 @@ import * as vscode from "vscode";
 import languages from "../data/languages.json";
 import { CLOSE_FENCE_COMMAND } from "./fenceCommands";
 import { fencedLines } from "./fences";
+import { findFrontmatter } from "../frontmatter/block";
+import { frontmatterCompletions, presentKeys } from "../frontmatter/completion";
 import { anchorLinkPrefix, collectAnchors, fenceLanguagePrefix } from "./context";
 
 const TAG_PREFIX = /<([a-z]*)$/;
@@ -33,11 +35,16 @@ const TAG_SNIPPETS: TagSnippet[] = [
 ];
 
 export class HfmCompletion implements vscode.CompletionItemProvider {
-  static readonly triggerCharacters = ["#", "<", "`", "~"];
+  static readonly triggerCharacters = ["#", "<", "`", "~", " "];
 
   provideCompletionItems(document: vscode.TextDocument, position: vscode.Position): vscode.CompletionItem[] {
     const prefix = document.lineAt(position.line).text.slice(0, position.character);
     const lines = document.getText().split(/\r?\n/);
+
+    const block = findFrontmatter(lines);
+    if (block && position.line > block.startLine && position.line < block.endLine) {
+      return this.frontmatter(position, prefix, lines.slice(block.startLine + 1, block.endLine));
+    }
     const inCode = fencedLines(lines.slice(0, position.line + 1));
 
     const typedAnchor = anchorLinkPrefix(prefix);
@@ -50,6 +57,24 @@ export class HfmCompletion implements vscode.CompletionItemProvider {
     }
     if (!inCode[position.line]) return this.tags(position, prefix);
     return [];
+  }
+
+  private frontmatter(position: vscode.Position, prefix: string, blockLines: string[]): vscode.CompletionItem[] {
+    const others = blockLines.filter((_, i) => i !== position.line - 1);
+    const { typed, items } = frontmatterCompletions(prefix, presentKeys(others));
+    const range = new vscode.Range(position.translate(0, -typed), position);
+    return items.map((entry, i) => {
+      const item = new vscode.CompletionItem(
+        entry.label,
+        entry.kind === "key" ? vscode.CompletionItemKind.Property : vscode.CompletionItemKind.EnumMember,
+      );
+      if (entry.detail) item.detail = entry.detail;
+      item.insertText = entry.insert;
+      item.range = range;
+      item.sortText = String(i).padStart(4, "0");
+      if (entry.kind === "key") item.command = { command: "editor.action.triggerSuggest", title: "Значения поля" };
+      return item;
+    });
   }
 
   private anchors(document: vscode.TextDocument, position: vscode.Position, typed: string): vscode.CompletionItem[] {

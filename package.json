@@ -83,6 +83,16 @@
         "category": "HFM"
       },
       {
+        "command": "hfm.insertFrontmatter",
+        "title": "Вставить frontmatter статьи",
+        "category": "HFM"
+      },
+      {
+        "command": "hfm.goToCover",
+        "title": "Открыть КДПВ",
+        "category": "HFM"
+      },
+      {
         "command": "hfm.onEnterKey",
         "title": "Enter в списке: новый пункт",
         "category": "HFM"
@@ -132,6 +142,14 @@
         },
         {
           "command": "hfm.generateToc",
+          "when": "editorLangId == hfm"
+        },
+        {
+          "command": "hfm.insertFrontmatter",
+          "when": "editorLangId == hfm"
+        },
+        {
+          "command": "hfm.goToCover",
           "when": "editorLangId == hfm"
         },
         {
@@ -269,7 +287,8 @@
     "@lezer/common": "^1.5.3",
     "@lezer/highlight": "^1.2.5",
     "markdown-it": "^15.0.2",
-    "mathjax-full": "^3.2.2"
+    "mathjax-full": "^3.2.2",
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "@types/markdown-it": "^14.2.0",

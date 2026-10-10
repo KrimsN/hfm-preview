@@ -1,4 +1,5 @@
 import MarkdownIt from "markdown-it";
+import { maskFrontmatter } from "../frontmatter/block";
 
 export interface Heading {
   /** Уровень в исходном Markdown, 1–6 */
@@ -17,7 +18,7 @@ const plain = new MarkdownIt();
  */
 export function extractHeadings(text: string): Heading[] {
   const headings: Heading[] = [];
-  const tokens = plain.parse(text, {});
+  const tokens = plain.parse(maskFrontmatter(text), {});
 
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i]!;

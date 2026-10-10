@@ -47,6 +47,74 @@
     "severity": "warning",
     "message": "Форматирование в заголовке не поддерживается. Ссылки, код и выделение будут удалены, останется только текст."
   },
+  "heading-single-h1": {
+    "severity": "warning",
+    "message": "Единственный заголовок «#», остальные глубже. В HFM «#» — заголовок второго уровня, а не название статьи. Название задаётся полем «Заголовок» во frontmatter и в тело не входит."
+  },
+  "fm-yaml": {
+    "severity": "error",
+    "message": "Некорректный YAML во frontmatter: {message}"
+  },
+  "fm-not-map": {
+    "severity": "error",
+    "message": "Frontmatter должен состоять из строк «Поле: значение»."
+  },
+  "fm-unknown-key": {
+    "severity": "warning",
+    "message": "Неизвестное поле «{key}». Известные поля: {known}."
+  },
+  "fm-type-list": {
+    "severity": "error",
+    "message": "Поле «{key}» должно быть списком: [один, два] или пункты через «- »."
+  },
+  "fm-type-bool": {
+    "severity": "error",
+    "message": "Поле «{key}» принимает только true или false."
+  },
+  "fm-type-string": {
+    "severity": "error",
+    "message": "Поле «{key}» должно быть обычным значением, а не списком или набором полей."
+  },
+  "fm-enum": {
+    "severity": "error",
+    "message": "Недопустимое значение «{value}» поля «{key}». Допустимо: {allowed}."
+  },
+  "fm-hubs-max": {
+    "severity": "error",
+    "message": "Хабов может быть не больше {max}, указано {count}."
+  },
+  "fm-keywords-max": {
+    "severity": "error",
+    "message": "Ключевых слов может быть не больше {max}, указано {count}."
+  },
+  "fm-cover-url": {
+    "severity": "error",
+    "message": "КДПВ задаётся локальным путём к файлу, а не адресом в интернете."
+  },
+  "fm-cover-ext": {
+    "severity": "error",
+    "message": "Хабр принимает в качестве КДПВ файлы {allowed}, а не «{ext}»."
+  },
+  "fm-cover-missing": {
+    "severity": "error",
+    "message": "Файл КДПВ «{path}» не найден (путь считается от папки статьи)."
+  },
+  "fm-teaser-short": {
+    "severity": "error",
+    "message": "Текст в ленте короче {min} символов ({count}). Хабр рекомендует от {min} до {rec}."
+  },
+  "fm-teaser-long": {
+    "severity": "hint",
+    "message": "Текст в ленте длиннее рекомендуемых {rec} символов ({count}). Допустимый максимум — {max}."
+  },
+  "fm-teaser-max": {
+    "severity": "error",
+    "message": "Текст в ленте длиннее допустимых {max} символов ({count})."
+  },
+  "fm-teaser-markup": {
+    "severity": "warning",
+    "message": "В ленте можно размещать только текст и ссылки; разметка ({what}) не сработает."
+  },
   "table-align": {
     "severity": "warning",
     "message": "Выравнивание колонок не поддерживается. Хабр выровняет все колонки по левому краю."

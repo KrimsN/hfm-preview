@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { analyze } from "./analyze";
 import { formatMessage, severityOf, type Severity } from "./rules";
 import { fixFor } from "./fixes";
+import { coverExistsFor } from "../frontmatter/commands";
 
 const UPDATE_DEBOUNCE_MS = 300;
 export const SOURCE = "hfm";
@@ -57,7 +58,7 @@ export class HfmDiagnostics implements vscode.Disposable {
     }
 
     const typography = vscode.workspace.getConfiguration("hfm.diagnostics").get<boolean>("typography", true);
-    const diagnostics = analyze(document.getText(), { typography }).map((finding) => {
+    const diagnostics = analyze(document.getText(), { typography, coverExists: coverExistsFor(document) }).map((finding) => {
       const range = new vscode.Range(finding.line, finding.start, finding.line, finding.end);
       const diagnostic = new vscode.Diagnostic(
         range,

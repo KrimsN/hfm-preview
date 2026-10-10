@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 import * as vscode from "vscode";
+import { maskFrontmatter } from "../frontmatter/block";
 import type { HfmParser } from "../markdown/createParser";
 import type { HfmEnv } from "../markdown/env";
 import { previewTitle, uniqueLabels } from "./titles";
@@ -189,7 +190,7 @@ export class PreviewPanel {
 
   private render(): string {
     const env: HfmEnv = { sourceLines: true, resolveImage: (src) => this.resolveImage(src) };
-    return this.parser.render(this.document.getText(), env);
+    return this.parser.render(maskFrontmatter(this.document.getText()), env);
   }
 
   /**
