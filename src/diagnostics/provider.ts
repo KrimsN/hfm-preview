@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { analyze } from "./analyze";
 import { formatMessage, severityOf, type Severity } from "./rules";
 import { fixFor } from "./fixes";
-import { coverExistsFor } from "../frontmatter/commands";
+import { CoverChecker } from "../frontmatter/coverCheck";
 
 const UPDATE_DEBOUNCE_MS = 300;
 export const SOURCE = "hfm";
@@ -18,12 +18,15 @@ const SEVERITY: Record<Severity, vscode.DiagnosticSeverity> = {
 export class HfmDiagnostics implements vscode.Disposable {
   private readonly collection = vscode.languages.createDiagnosticCollection(SOURCE);
   private readonly timers = new Map<string, NodeJS.Timeout>();
+  private readonly covers = new CoverChecker((document) => this.schedule(document));
   private readonly disposables: vscode.Disposable[] = [this.collection];
 
   constructor(private readonly languageId: string) {
     this.disposables.push(
       vscode.workspace.onDidOpenTextDocument((d) => this.refresh(d)),
-      vscode.workspace.onDidChangeTextDocument((e) => this.schedule(e.document)),
+      vscode.workspace.onDidChangeTextDocument((e) => {
+        if (e.contentChanges.length > 0) this.schedule(e.document);
+      }),
       vscode.workspace.onDidCloseTextDocument((d) => this.clear(d)),
       vscode.workspace.onDidChangeConfiguration((e) => {
         if (e.affectsConfiguration("hfm.diagnostics")) vscode.workspace.textDocuments.forEach((d) => this.refresh(d));
@@ -40,7 +43,13 @@ export class HfmDiagnostics implements vscode.Disposable {
     if (document.languageId !== this.languageId) return;
     const key = document.uri.toString();
     clearTimeout(this.timers.get(key));
-    this.timers.set(key, setTimeout(() => this.refresh(document), UPDATE_DEBOUNCE_MS));
+    this.timers.set(
+      key,
+      setTimeout(() => {
+        this.timers.delete(key);
+        this.refresh(document);
+      }, UPDATE_DEBOUNCE_MS),
+    );
   }
 
   private clear(document: vscode.TextDocument): void {
@@ -58,7 +67,7 @@ export class HfmDiagnostics implements vscode.Disposable {
     }
 
     const typography = vscode.workspace.getConfiguration("hfm.diagnostics").get<boolean>("typography", true);
-    const diagnostics = analyze(document.getText(), { typography, coverExists: coverExistsFor(document) }).map((finding) => {
+    const diagnostics = analyze(document.getText(), { typography, coverExists: this.covers.existsFor(document) }).map((finding) => {
       const range = new vscode.Range(finding.line, finding.start, finding.line, finding.end);
       const diagnostic = new vscode.Diagnostic(
         range,
