@@ -20,8 +20,12 @@ export function activate(context: vscode.ExtensionContext): void {
   watchForRebuild(context);
 
   const open = (column: vscode.ViewColumn) => () => {
-    const editor = vscode.window.activeTextEditor;
-    if (!editor || editor.document.languageId !== HFM_LANGUAGE_ID) {
+    // из фокуса webview activeTextEditor пуст — берём видимый редактор HFM-файла
+    const editor =
+      vscode.window.activeTextEditor?.document.languageId === HFM_LANGUAGE_ID
+        ? vscode.window.activeTextEditor
+        : vscode.window.visibleTextEditors.find((e) => e.document.languageId === HFM_LANGUAGE_ID);
+    if (!editor) {
       void vscode.window.showWarningMessage("Откройте файл *.habr.md или выберите для файла язык «Habr Flavored Markdown», чтобы увидеть превью.");
       return;
     }
@@ -29,6 +33,7 @@ export function activate(context: vscode.ExtensionContext): void {
   };
 
   context.subscriptions.push(
+    { dispose: () => PreviewPanel.disposeAll() },
     vscode.window.registerWebviewPanelSerializer(VIEW_TYPE, new PreviewSerializer(context, parser, log)),
     new HfmDiagnostics(HFM_LANGUAGE_ID),
     vscode.languages.registerCodeActionsProvider({ language: HFM_LANGUAGE_ID }, new HfmCodeActions(), HfmCodeActions.metadata),

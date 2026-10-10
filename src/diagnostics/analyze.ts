@@ -1,4 +1,6 @@
 import MarkdownIt from "markdown-it";
+import { ATTR_DROPPED_ON, DROPPED_ATTRS, DROPPED_TAGS, isHabrImageUrl } from "../dialect";
+import { personaBoundary } from "../markdown/persona";
 import { resolveLanguage, suggestLanguage } from "../markdown/languages";
 import type { RuleCode } from "./rules";
 import { maskFrontmatter } from "../frontmatter/block";
@@ -20,15 +22,17 @@ type Add = (code: RuleCode, line: number, start: number, end: number, args?: Rec
 const plain = new MarkdownIt({ html: true, linkify: false });
 
 const HAS_SCHEME = /^([a-z][a-z\d+.-]*:|\/\/)/i;
-const HABRASTORAGE = /^https?:\/\/([\w-]+\.)*habrastorage\.org\//i;
 
 const IMAGE = /!\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+"[^"]*")?\s*\)/g;
 const IMAGE_LINK = /\[!\[[^\]]*\]\([^)]*\)\]\([^)]*\)/g;
 const LINK = /(?<!!)\[[^\]]*\]\(\s*<?([^)\s>]+)>?(?:\s+"([^"]*)")?\s*\)/g;
 const FOOTNOTE = /\[\^[^\]\s]+\]/g;
 const TASK = /^\s*(?:[-+*]|\d+[.)])\s+(\[[ xX]\])\s/;
-const DROPPED_TAG = /<(span|mark|kbd|small|font|center)\b[^>]*>/gi;
-const DROPPED_ATTR = /<(?:div|p|img|td|th|table|tr)\b[^>]*?\s(style|align)\s*=/gi;
+const DROPPED_TAG = new RegExp(String.raw`<(${DROPPED_TAGS.join("|")})\b[^>]*>`, "gi");
+const DROPPED_ATTR = new RegExp(
+  String.raw`<(?:${ATTR_DROPPED_ON.join("|")})\b[^>]*?\s(${DROPPED_ATTRS.join("|")})\s*=`,
+  "gi",
+);
 const INLINE_IMG = /<img\b[^>]*\sinline\b[^>]*>/gi;
 const ANCHOR = /<anchor>\s*([^<]+?)\s*<\/anchor>/g;
 const EMOJI = /(?<![\w:/])(:[a-z][a-z0-9_+-]*:)(?![\w:])/g;
@@ -95,10 +99,8 @@ export function analyze(source: string, options: { typography?: boolean } & Fron
       if (token.type === "fence" && map) checkFenceLanguage(token.info, lines[map[0]] ?? "", map[0], add);
     } else if (token.type === "html_block" && map && token.content.trimStart().startsWith("<!--")) {
       markSkip(map);
-    } else if (token.type === "html_block" && /<persona>/.test(token.content)) {
-      inPersona = true;
-    } else if (token.type === "html_block" && /<\/persona>/.test(token.content)) {
-      inPersona = false;
+    } else if (personaBoundary(token)) {
+      inPersona = personaBoundary(token) === "open";
     } else if (token.type === "heading_open" && map && !inPersona) {
       if (quoteDepth > 0) {
         wholeLine("quote-heading", map[0]);
@@ -146,7 +148,7 @@ export function analyze(source: string, options: { typography?: boolean } & Fron
       const at = m.index + m[0].indexOf(src);
       if (isRelative(src) || (src.startsWith("/") && !src.startsWith("//"))) {
         add("image-relative", n, at, at + src.length, { src });
-      } else if (/^https?:\/\//i.test(src) && !HABRASTORAGE.test(src)) {
+      } else if (/^https?:\/\//i.test(src) && !isHabrImageUrl(src)) {
         add("image-external", n, at, at + src.length);
       }
     }
@@ -186,7 +188,7 @@ export function analyze(source: string, options: { typography?: boolean } & Fron
     }
     for (const m of code.matchAll(INLINE_IMG)) {
       const src = /\ssrc\s*=\s*["']([^"']*)["']/i.exec(m[0])?.[1] ?? "";
-      if (!HABRASTORAGE.test(src)) add("inline-image-external", n, m.index, m.index + m[0].length);
+      if (!isHabrImageUrl(src)) add("inline-image-external", n, m.index, m.index + m[0].length);
     }
 
     const bare = maskForText(line);

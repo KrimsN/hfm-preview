@@ -114,3 +114,22 @@ describe("buildTocEdits", () => {
     expect(buildTocEdits("просто текст\n", { insertLine: 0 })).toEqual([]);
   });
 });
+
+describe("buildTocEdits: frontmatter и персона", () => {
+  it("оглавление не попадает выше или внутрь frontmatter", () => {
+    const text = "---\nЗаголовок: A\n---\n\n## Раздел\n";
+    for (const insertLine of [0, 1, 2]) {
+      const result = run(text, insertLine);
+      expect(result.startsWith("---\nЗаголовок: A\n---\n")).toBe(true);
+      expect(result).toContain("<!-- toc -->");
+    }
+  });
+
+  it("заголовок внутри <persona> не попадает в оглавление", () => {
+    const text = "<persona>\n\n![](https://habrastorage.org/i.jpg)\n##### Имя Фамилия\nРоль\n\n</persona>\n\n## Раздел\n";
+    const result = run(text);
+    expect(result).not.toContain("Имя Фамилия)");
+    expect(result).not.toContain("<anchor>imya");
+    expect(result).toContain("- [Раздел](#");
+  });
+});

@@ -1,19 +1,24 @@
 import type { HfmParser } from "../createParser";
+import { DROPPED_TAGS, isHabrImageUrl, passthroughAttrs, renamedTag, safeHref } from "../../dialect";
 import { type HfmEnv, resolveImageSrc } from "../env";
 import { embedHtml, iframeToUrl } from "./embeds";
 
 const COMMENT = /<!--[\s\S]*?-->/g;
 const TAG = /<(\/?)([a-zA-Z][\w-]*)((?:\s+[^<>]*?)?)\s*(\/?)>/g;
 
-/** Теги, которыми занимаются другие плагины HFM, — здесь они проходят без изменений. */
-const PASSTHROUGH = new Set([
-  "spoiler", "details", "summary", "persona", "anchor", "oembed",
-  "strong", "em", "u", "s", "sup", "sub", "br", "hr", "ul", "ol", "li", "pre", "code", "blockquote",
-]);
-const RENAMED: Record<string, string> = { b: "strong", i: "em", strike: "s", del: "s", div: "p" };
-const DROPPED = new Set(["span", "mark", "kbd", "small", "font", "center"]);
+const DROPPED = new Set(DROPPED_TAGS);
 const TABLE_CELLS = new Set(["td", "th"]);
 const TABLE_STRUCTURE = new Set(["tbody", "thead", "tfoot"]);
+
+/** Тег без чужих атрибутов: остаются только разрешённые данными диалекта. */
+function rebuildTag(slash: string, name: string, attrs: string, allowed: readonly string[]): string {
+  const kept = allowed.flatMap((key) => {
+    const value = attr(attrs, key);
+    // кавычки и скобки вырезаем: значение попадёт в строку, которую разбирают дальше (спойлер)
+    return value === undefined ? [] : [` ${key}="${value.replace(/["<>]/g, "")}"`];
+  });
+  return `<${slash}${name}${slash ? "" : kept.join("")}>`;
+}
 
 function attr(attrs: string, name: string): string | undefined {
   const match = new RegExp(`(?:^|\\s)${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`, "i").exec(attrs);
@@ -27,14 +32,16 @@ function attr(attrs: string, name: string): string | undefined {
 export function cleanHtml(md: HfmParser, html: string, block: boolean, env?: HfmEnv): string {
   const esc = md.utils.escapeHtml;
 
-  return html.replace(COMMENT, "").replace(TAG, (whole, slash: string, rawName: string, attrs: string) => {
+  return html.replace(COMMENT, "").replace(TAG, (_whole, slash: string, rawName: string, attrs: string) => {
     const name = rawName.toLowerCase();
     const closing = slash === "/";
 
     if (name === "br") return "<br>";
-    if (PASSTHROUGH.has(name)) return whole;
+    const passthrough = passthroughAttrs(name);
+    if (passthrough) return rebuildTag(slash, name, attrs, passthrough);
     if (DROPPED.has(name)) return "";
-    if (RENAMED[name]) return `<${slash}${RENAMED[name]}>`;
+    const renamed = renamedTag(name);
+    if (renamed) return `<${slash}${renamed}>`;
     if (TABLE_STRUCTURE.has(name)) return "";
 
     if (name === "table") {
@@ -48,7 +55,9 @@ export function cleanHtml(md: HfmParser, html: string, block: boolean, env?: Hfm
     if (name === "a") {
       if (closing) return "</a>";
       const href = attr(attrs, "href");
-      return href === undefined ? "<a>" : `<a href="${esc(href)}" rel="noopener nofollow">`;
+      // схему проверяем после раскрытия сущностей: `java&#9;script:` браузер прочтёт как `javascript:`
+      const safe = href === undefined ? undefined : safeHref(md.utils.unescapeAll(href));
+      return safe === undefined ? "<a>" : `<a href="${esc(safe)}" rel="noopener nofollow">`;
     }
     if (name === "abbr") {
       if (closing) return "</abbr>";
@@ -58,7 +67,7 @@ export function cleanHtml(md: HfmParser, html: string, block: boolean, env?: Hfm
       const src = attr(attrs, "src") ?? "";
       if (/\sinline(\s|=|$)/i.test(` ${attrs}`)) {
         // inline-картинки Хабр принимает только со своего хранилища
-        return /^https?:\/\/habrastorage\.org\//.test(src) ? `<img src="${esc(src)}">` : "";
+        return isHabrImageUrl(src) ? `<img src="${esc(src)}">` : "";
       }
       const alt = esc(attr(attrs, "alt") ?? "");
       const width = attr(attrs, "width");

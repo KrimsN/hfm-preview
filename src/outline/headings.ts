@@ -1,5 +1,6 @@
 import MarkdownIt from "markdown-it";
 import { maskFrontmatter } from "../frontmatter/block";
+import { personaBoundary } from "../markdown/persona";
 
 export interface Heading {
   /** Уровень в исходном Markdown, 1–6 */
@@ -14,15 +15,19 @@ const plain = new MarkdownIt();
 
 /**
  * Заголовки документа: ATX и setext, без заголовков в блоках кода.
- * Заголовки внутри цитат Хабр превращает в абзацы, поэтому пропускаем и их.
+ * Заголовки внутри цитат Хабр превращает в абзацы, а заголовок внутри `<persona>` — часть персоны:
+ * пропускаем и их.
  */
 export function extractHeadings(text: string): Heading[] {
   const headings: Heading[] = [];
   const tokens = plain.parse(maskFrontmatter(text), {});
+  let inPersona = false;
 
   for (let i = 0; i < tokens.length; i++) {
     const token = tokens[i]!;
-    if (token.type !== "heading_open" || token.level !== 0 || !token.map) continue;
+    const boundary = personaBoundary(token);
+    if (boundary) inPersona = boundary === "open";
+    if (inPersona || token.type !== "heading_open" || token.level !== 0 || !token.map) continue;
 
     const inline = tokens[i + 1];
     const title = (inline?.children ?? [])

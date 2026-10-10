@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { analyze } from "../src/diagnostics/analyze";
 import { createParser } from "../src/markdown/createParser";
 
 const md = createParser();
@@ -277,5 +278,42 @@ describe("sourceLines", () => {
 
   it("без флага разметка не меняется", () => {
     expect(md.render("# a")).not.toContain("data-line");
+  });
+});
+
+describe("санитизация HTML: атрибуты и схемы", () => {
+
+
+  it("у проходных тегов остаются только разрешённые атрибуты", () => {
+    const html = md.render('<ul style="position:fixed;background:url(https://x/y)"><li onclick="x()">a</li></ul>\n');
+    expect(html).not.toMatch(/style|onclick|position/);
+    expect(html).toContain("<ul>");
+    expect(html).toContain("<li>");
+  });
+
+  it("title спойлера сохраняется, остальные атрибуты — нет", () => {
+    const html = md.render('<spoiler title="Тема" onclick="x()">\n\nтекст\n\n</spoiler>\n');
+    expect(html).toContain("<summary>Тема</summary>");
+    expect(html).not.toContain("onclick");
+  });
+
+  it("javascript: в href отбрасывается, даже с обфускацией", () => {
+    expect(md.render('<a href="javascript:alert(1)">x</a>')).not.toContain("javascript");
+    expect(md.render('<a href="java&#9;script:alert(1)">x</a>')).not.toContain("script:");
+    expect(md.render('<a href=" JaVaScRiPt:alert(1)">x</a>')).not.toContain("alert");
+    expect(md.render('<a href="https://habr.com">x</a>')).toContain('href="https://habr.com"');
+    expect(md.render('<a href="#anchor">x</a>')).toContain('href="#anchor"');
+  });
+
+  it("inline-картинка с поддомена habrastorage принимается и в рендере, и в диагностике", () => {
+    const src = "https://cdn.habrastorage.org/x.png";
+    expect(md.renderInline(`<img inline="true" src="${src}" />`)).toContain(src);
+    expect(analyze(`<img inline="true" src="${src}" />`).map((f) => f.code)).toEqual([]);
+  });
+
+  it("поддельный хост не считается хранилищем", () => {
+    const src = "https://evilhabrastorage.org/x.png";
+    expect(md.renderInline(`<img inline="true" src="${src}" />`)).not.toContain("<img");
+    expect(analyze(`<img inline="true" src="${src}" />`).map((f) => f.code)).toEqual(["inline-image-external"]);
   });
 });

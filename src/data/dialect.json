@@ -1,0 +1,31 @@
+{
+  "imageHosts": ["habrastorage.org"],
+  "linkSchemes": ["http:", "https:", "mailto:"],
+  "html": {
+    "passthrough": {
+      "spoiler": ["title"],
+      "details": [],
+      "summary": [],
+      "persona": [],
+      "anchor": [],
+      "oembed": [],
+      "strong": [],
+      "em": [],
+      "u": [],
+      "s": [],
+      "sup": [],
+      "sub": [],
+      "hr": [],
+      "ul": [],
+      "ol": [],
+      "li": [],
+      "pre": [],
+      "code": [],
+      "blockquote": []
+    },
+    "renamed": { "b": "strong", "i": "em", "strike": "s", "del": "s", "div": "p" },
+    "dropped": ["span", "mark", "kbd", "small", "font", "center"],
+    "attrDroppedOn": ["div", "p", "img", "td", "th", "table", "tr"],
+    "attrDropped": ["style", "align"]
+  }
+}

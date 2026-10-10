@@ -9,11 +9,23 @@ export interface FrontmatterBlock {
 
 const FENCE_OPEN = /^\uFEFF?---[ \t]*$/;
 const FENCE_CLOSE = /^(?:---|\.\.\.)[ \t]*$/;
+/** Первая значимая строка YAML: `ключ: значение` (ключ может быть русской фразой), элемент списка или комментарий. */
+const YAML_START = /^(?:#|-[ \t]|[^\s:#-][^:]*:(?:[ \t]|$))/u;
 
-/** Блок YAML в самом начале документа. Без закрывающего ограждения блока нет: это обычная линия `---`. */
+/**
+ * Блок YAML в самом начале документа. Без закрывающего ограждения блока нет: это обычная линия `---`.
+ * Если после `---` идёт обычный текст, а не `ключ: значение`, это две горизонтальные линии, а не frontmatter.
+ */
 export function findFrontmatter(lines: readonly string[]): FrontmatterBlock | undefined {
   if (!FENCE_OPEN.test(lines[0] ?? "")) return undefined;
-  for (let i = 1; i < lines.length; i++) {
+
+  let first = 1;
+  while (first < lines.length && lines[first]!.trim() === "") first++;
+  const firstLine = lines[first];
+  if (firstLine === undefined) return undefined;
+  if (!FENCE_CLOSE.test(firstLine) && !YAML_START.test(firstLine)) return undefined;
+
+  for (let i = first; i < lines.length; i++) {
     if (FENCE_CLOSE.test(lines[i]!)) return { startLine: 0, endLine: i, yaml: lines.slice(1, i).join("\n") };
   }
   return undefined;

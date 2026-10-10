@@ -117,7 +117,13 @@ describe("parseFrontmatter: значения", () => {
   });
 
   it("не набор полей", () => {
-    expect(codes(doc("просто текст"))).toEqual(["fm-not-map"]);
+    expect(codes(doc("- a\n- b"))).toEqual(["fm-not-map"]);
+  });
+
+  it("две горизонтальные линии с текстом между ними — не frontmatter", () => {
+    expect(findFrontmatter(["---", "просто текст", "---", "ещё"])).toBeUndefined();
+    expect(codes(doc("просто текст"))).toEqual([]);
+    expect(extractHeadings(doc("просто текст"))).toEqual([{ level: 2, title: "просто текст", line: 1 }]);
   });
 });
 

@@ -1,3 +1,4 @@
+import { findFrontmatter } from "../frontmatter/block";
 import { extractHeadings, type Heading } from "./headings";
 
 /** Замена строк `[start, end)` на `lines`; при `start === end` — вставка перед строкой `start`. */
@@ -125,7 +126,9 @@ export function buildTocEdits(text: string, options: TocOptions): LineEdit[] {
     return edits;
   }
 
-  const at = Math.min(Math.max(options.insertLine, 0), lines.length);
+  // вставка выше или внутри frontmatter сломала бы его: оглавление идёт после блока
+  const afterFrontmatter = (findFrontmatter(lines)?.endLine ?? -1) + 1;
+  const at = Math.min(Math.max(options.insertLine, afterFrontmatter, 0), lines.length);
   const blankBefore = at === 0 || lines[at - 1]!.trim() === "";
   const blankAfter = at >= lines.length || lines[at]!.trim() === "";
   edits.push({
