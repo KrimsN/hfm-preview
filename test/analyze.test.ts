@@ -162,14 +162,14 @@ describe("analyze: граничные случаи", () => {
   });
 
   it("CRLF и BOM не сдвигают позиции", () => {
-    const text = "﻿---\r\nЗаголовок: A\r\n---\r\n\r\n![](./a.png)\r\n";
+    const text = "\uFEFF---\r\nЗаголовок: A\r\n---\r\n\r\n![](./a.png)\r\n";
     const found = analyze(text).find((f) => f.code === "image-relative");
     expect(found).toMatchObject({ line: 4, start: 4, end: 11 });
   });
 
   it("незакрытый блок кода не роняет разбор", () => {
-    expect(() => analyze("```js\n![](./a.png)\n")).not.toThrow();
-    expect(codes("```js\n![](./a.png)\n")).toEqual([]);
+    expect(() => analyze("```javascript\n![](./a.png)\n")).not.toThrow();
+    expect(codes("```javascript\n![](./a.png)\n")).toEqual([]);
   });
 
   it("строка из тысяч тегов без атрибутов разбирается быстро", () => {
