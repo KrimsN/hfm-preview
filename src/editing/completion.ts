@@ -39,7 +39,7 @@ const MAX_FRONTMATTER_LINES = 100;
 
 /** Строки YAML, если курсор стоит внутри frontmatter; иначе `undefined`. */
 function frontmatterAround(document: vscode.TextDocument, position: vscode.Position): string[] | undefined {
-  if (position.line === 0 || !/^﻿?---[ \t]*$/.test(document.lineAt(0).text)) return undefined;
+  if (position.line === 0 || !/^\uFEFF?---[ \t]*$/.test(document.lineAt(0).text)) return undefined;
   const head = Array.from(
     { length: Math.min(document.lineCount, Math.max(position.line + 1, MAX_FRONTMATTER_LINES)) },
     (_, i) => document.lineAt(i).text,
