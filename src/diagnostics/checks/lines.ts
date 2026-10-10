@@ -31,7 +31,8 @@ const DROPPED_ATTR = new RegExp(
   "gi",
 );
 const INLINE_IMG = /<img\b[^>]*\sinline\b[^>]*>/gi;
-const EMOJI = /(?<![\w:/])(:[a-z][a-z0-9_+-]*:)(?![\w:])/g;
+const SPOILER_OPEN = /<spoiler\b([^>]*)>/gi;
+const EMOJI =/(?<![\w:/])(:[a-z][a-z0-9_+-]*:)(?![\w:])/g;
 const SINGLE_TILDE = /(?<![~\\])~(?!~)[^\s~](?:[^~\n]*[^\s~\\])?~(?!~)/g;
 const STRAIGHT_QUOTES = /"[^"\n]+"/g;
 
@@ -106,6 +107,13 @@ const inlineImages: LineCheck = ({ n, code }, add) => {
   }
 };
 
+const spoilersWithoutTitle: LineCheck = ({ n, code }, add) => {
+  for (const m of code.matchAll(SPOILER_OPEN)) {
+    const title = /\stitle\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(m[1]!);
+    if (!(title?.[1] ?? title?.[2] ?? "").trim()) add("spoiler-no-title", n, m.index, m.index + m[0].length);
+  }
+};
+
 const emojiShortcodes: LineCheck = ({ n, bare }, add) => {
   for (const m of bare.matchAll(EMOJI)) add("emoji-shortcode", n, m.index, m.index + m[0].length, { code: m[1]! });
 };
@@ -127,6 +135,7 @@ export const LINE_CHECKS: readonly LineCheck[] = [
   droppedTags,
   droppedAttributes,
   inlineImages,
+  spoilersWithoutTitle,
   emojiShortcodes,
   singleTilde,
   straightQuotes,

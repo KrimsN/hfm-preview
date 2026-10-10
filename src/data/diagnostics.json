@@ -19,6 +19,10 @@
     "severity": "error",
     "message": "<img inline> с внешним src Хабр удаляет целиком. Допустим только src с habrastorage.org."
   },
+  "spoiler-no-title": {
+    "severity": "warning",
+    "message": "У <spoiler> нет заголовка. Хабр подставит «Hidden text»; задайте его: <spoiler title=\"Заголовок\">."
+  },
   "footnote": {
     "severity": "warning",
     "message": "Сноски не поддерживаются. Текст сноски останется в статье как есть."

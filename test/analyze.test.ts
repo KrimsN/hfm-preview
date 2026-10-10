@@ -178,3 +178,17 @@ describe("analyze: граничные случаи", () => {
     expect(performance.now() - started).toBeLessThan(1500);
   });
 });
+
+describe("analyze: spoiler без заголовка", () => {
+  it("предупреждает о <spoiler> без title и с пустым title", () => {
+    expect(codes("<spoiler>\n\nтекст\n\n</spoiler>")).toEqual(["spoiler-no-title"]);
+    expect(codes('<spoiler title="">\n\nтекст\n\n</spoiler>')).toEqual(["spoiler-no-title"]);
+    expect(codes('<spoiler title="  ">\n\nтекст\n\n</spoiler>')).toEqual(["spoiler-no-title"]);
+  });
+
+  it("не трогает spoiler с заголовком, details и код", () => {
+    expect(codes('<spoiler title="Тема">\n\nтекст\n\n</spoiler>')).toEqual([]);
+    expect(codes("<details>\n<summary>Тема</summary>\n\nтекст\n\n</details>")).toEqual([]);
+    expect(codes("```\n<spoiler>\n```")).toEqual([]);
+  });
+});
