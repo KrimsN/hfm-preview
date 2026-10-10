@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { analyze } from "../src/diagnostics/analyze";
-import { formatMessage } from "../src/diagnostics/rules";
+import { effectiveSeverity, formatMessage } from "../src/diagnostics/rules";
 
 const codes = (text: string): string[] => analyze(text).map((f) => f.code);
 
@@ -136,5 +136,21 @@ describe("analyze: формулы не считаются разметкой", (
 
   it("одиночный доллар (цена) ничего не маскирует", () => {
     expect(codes("Стоит $5, а ~это~ нет")).toEqual(["strike-single-tilde"]);
+  });
+});
+
+describe("effectiveSeverity: настройка hfm.diagnostics.rules", () => {
+  it("по умолчанию берёт уровень из данных", () => {
+    expect(effectiveSeverity("image-external")).toBe("warning");
+  });
+
+  it("off отключает правило, остальные значения меняют уровень", () => {
+    expect(effectiveSeverity("image-external", { "image-external": "off" })).toBeUndefined();
+    expect(effectiveSeverity("image-external", { "image-external": "error" })).toBe("error");
+  });
+
+  it("мусор в настройке игнорируется", () => {
+    expect(effectiveSeverity("image-external", { "image-external": 5 })).toBe("warning");
+    expect(effectiveSeverity("image-external", { constructor: "off" })).toBe("warning");
   });
 });

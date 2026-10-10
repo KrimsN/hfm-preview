@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { analyze } from "./analyze";
-import { formatMessage, isRuleCode, severityOf, type Severity } from "./rules";
+import { effectiveSeverity, formatMessage, isRuleCode, type Severity } from "./rules";
 import { fixFor } from "./fixes";
 import { CoverChecker } from "../frontmatter/coverCheck";
 
@@ -66,17 +66,18 @@ export class HfmDiagnostics implements vscode.Disposable {
       return;
     }
 
-    const typography = vscode.workspace.getConfiguration("hfm.diagnostics").get<boolean>("typography", true);
-    const diagnostics = analyze(document.getText(), { typography, coverExists: this.covers.existsFor(document) }).map((finding) => {
+    const config = vscode.workspace.getConfiguration("hfm.diagnostics");
+    const typography = config.get<boolean>("typography", true);
+    const overrides = config.get<Record<string, unknown>>("rules", {});
+    const findings = analyze(document.getText(), { typography, coverExists: this.covers.existsFor(document) });
+    const diagnostics = findings.flatMap((finding) => {
+      const severity = effectiveSeverity(finding.code, overrides);
+      if (!severity) return [];
       const range = new vscode.Range(finding.line, finding.start, finding.line, finding.end);
-      const diagnostic = new vscode.Diagnostic(
-        range,
-        formatMessage(finding.code, finding.args),
-        SEVERITY[severityOf(finding.code)],
-      );
+      const diagnostic = new vscode.Diagnostic(range, formatMessage(finding.code, finding.args), SEVERITY[severity]);
       diagnostic.source = SOURCE;
       diagnostic.code = finding.code;
-      return diagnostic;
+      return [diagnostic];
     });
     this.collection.set(document.uri, diagnostics);
   }

@@ -10,7 +10,12 @@ permissions:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    # Windows нужен из-за путей (uniqueLabels, resolveCover) и окончаний строк
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
@@ -22,6 +27,7 @@ jobs:
       - run: npm test
       - run: npm run package
       - uses: actions/upload-artifact@v6
+        if: matrix.os == 'ubuntu-latest'
         with:
           name: hfm-preview-vsix
           path: "*.vsix"

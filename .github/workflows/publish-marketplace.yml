@@ -27,7 +27,7 @@ jobs:
       - name: Проверка токена и publisher
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        run: npx --yes @vscode/vsce verify-pat krimsn
+        run: npx --yes @vscode/vsce@4.0.0 verify-pat krimsn
 
       - name: Скачать .vsix из релиза
         if: ${{ !inputs.dry_run }}
@@ -39,4 +39,4 @@ jobs:
         if: ${{ !inputs.dry_run }}
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        run: npx --yes @vscode/vsce publish --no-dependencies --packagePath *.vsix
+        run: npx --yes @vscode/vsce@4.0.0 publish --no-dependencies --packagePath *.vsix
