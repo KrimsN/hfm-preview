@@ -154,3 +154,27 @@ describe("effectiveSeverity: настройка hfm.diagnostics.rules", () => {
     expect(effectiveSeverity("image-external", { constructor: "off" })).toBe("warning");
   });
 });
+
+describe("analyze: граничные случаи", () => {
+  it("пустой документ и документ из пробелов", () => {
+    expect(codes("")).toEqual([]);
+    expect(codes("   \n\n")).toEqual([]);
+  });
+
+  it("CRLF и BOM не сдвигают позиции", () => {
+    const text = "﻿---\r\nЗаголовок: A\r\n---\r\n\r\n![](./a.png)\r\n";
+    const found = analyze(text).find((f) => f.code === "image-relative");
+    expect(found).toMatchObject({ line: 4, start: 4, end: 11 });
+  });
+
+  it("незакрытый блок кода не роняет разбор", () => {
+    expect(() => analyze("```js\n![](./a.png)\n")).not.toThrow();
+    expect(codes("```js\n![](./a.png)\n")).toEqual([]);
+  });
+
+  it("строка из тысяч тегов без атрибутов разбирается быстро", () => {
+    const started = performance.now();
+    analyze("<div ".repeat(20_000));
+    expect(performance.now() - started).toBeLessThan(1500);
+  });
+});
