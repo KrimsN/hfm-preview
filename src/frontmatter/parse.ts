@@ -1,8 +1,8 @@
 import { isMap, isScalar, isSeq, parseDocument, type Node, type Scalar } from "yaml";
 import type { Finding } from "../diagnostics/types";
 import type { RuleCode } from "../diagnostics/rules";
-import data from "../data/frontmatter.json";
 import { findFrontmatter, type FrontmatterBlock } from "./block";
+import { COVER_EXTENSIONS, FIELDS, fieldByKey, LIMITS } from "./schema";
 
 export interface ArticleMeta {
   title?: string;
@@ -17,8 +17,6 @@ export interface ArticleMeta {
   cover?: string;
   teaser?: string;
 }
-
-type FieldId = keyof typeof data.fields;
 
 export interface Location {
   line: number;
@@ -40,11 +38,12 @@ export interface FrontmatterOptions {
   coverExists?: (path: string) => boolean;
 }
 
-const FIELD_BY_KEY = new Map<string, FieldId>(
-  (Object.keys(data.fields) as FieldId[]).map((id) => [data.fields[id].key, id]),
-);
-const KNOWN_KEYS = [...FIELD_BY_KEY.keys()].join(", ");
+const KNOWN_KEYS = FIELDS.map((field) => field.key).join(", ");
 const URL_SCHEME = /^[a-z][a-z\d+.-]*:\/\//i;
+
+function setMeta(meta: ArticleMeta, id: keyof ArticleMeta, value: string | boolean | string[]): void {
+  (meta as Record<string, string | boolean | string[]>)[id] = value;
+}
 
 const norm = (s: string): string => s.trim().toLocaleLowerCase("ru");
 
@@ -127,24 +126,27 @@ export function parseFrontmatter(text: string, options: FrontmatterOptions = {})
     const keyNode = pair.key as Scalar;
     const keyName = String(keyNode.value);
     const keyAt = spanOf(keyNode, { line: block.startLine + 1, start: 0, end: 1 });
-    const id = FIELD_BY_KEY.get(keyName);
-    if (!id) {
+    const field = fieldByKey(keyName);
+    if (!field) {
       add("fm-unknown-key", keyAt, { key: keyName, known: KNOWN_KEYS });
       continue;
     }
+    const id = field.id as keyof ArticleMeta;
 
     const value = pair.value as Node | null;
     const where = spanOf(value, keyAt);
 
     if (isSeq(value)) {
       const items = value.items;
-      if (id === "hubs" || id === "keywords") {
+      if (field.type === "list") {
         if (items.some((item) => !isScalar(item))) add("fm-type-string", where, { key: keyName });
         const names = items.filter(isScalar).map((item) => String(item.value ?? "").trim()).filter(Boolean);
         if (names.length === 0) continue;
-        meta[id === "hubs" ? "hubs" : "keywords"] = names;
-        const max = id === "hubs" ? data.limits.maxHubs : data.limits.maxKeywords;
-        if (names.length > max) add(id === "hubs" ? "fm-hubs-max" : "fm-keywords-max", keyAt, { max: String(max), count: String(names.length) });
+        setMeta(meta, id, names);
+        const max = field.limit ? LIMITS[field.limit] : Infinity;
+        if (field.limitRule && names.length > max) {
+          add(field.limitRule, keyAt, { max: String(max), count: String(names.length) });
+        }
       } else if (items.length > 0) {
         add("fm-type-string", where, { key: keyName });
       }
@@ -159,53 +161,38 @@ export function parseFrontmatter(text: string, options: FrontmatterOptions = {})
     const empty = scalar === null || scalar === undefined || (typeof scalar === "string" && scalar.trim() === "");
     if (empty) continue;
 
-    if (id === "hubs" || id === "keywords") {
+    if (field.type === "list") {
       add("fm-type-list", where, { key: keyName });
       continue;
     }
-    if (id === "translation") {
-      if (typeof scalar === "boolean") meta.translation = scalar;
+    if (field.type === "bool") {
+      if (typeof scalar === "boolean") setMeta(meta, id, scalar);
       else add("fm-type-bool", where, { key: keyName });
       continue;
     }
 
     const str = String(scalar).trim();
-    switch (id) {
-      case "title":
-      case "audience":
-        meta[id] = str;
+    switch (field.type) {
+      case "string":
+        setMeta(meta, id, str);
         break;
-      case "language": {
-        const lang = data.languages.find((l) => l === norm(str));
-        if (lang) meta.language = lang;
-        else add("fm-enum", where, { key: keyName, value: str, allowed: data.languages.join(", ") });
-        break;
-      }
-      case "format": {
-        if (norm(str) === "не указан") break;
-        const format = data.formats.find((f) => norm(f.name) === norm(str));
-        if (format) meta.format = format.name;
-        else add("fm-enum", where, { key: keyName, value: str, allowed: data.formats.map((f) => f.name).join(", ") });
+      case "enum": {
+        if (field.none !== undefined && norm(str) === norm(field.none)) break;
+        const options = field.options ?? [];
+        const option = options.find((o) => norm(o.name) === norm(str));
+        if (option) setMeta(meta, id, option.name);
+        else add("fm-enum", where, { key: keyName, value: str, allowed: options.map((o) => o.name).join(", ") });
         break;
       }
-      case "difficulty": {
-        if (str === "-") break;
-        const level = data.difficulties.find((d) => norm(d.name) === norm(str));
-        if (level) meta.difficulty = level.name;
-        else add("fm-enum", where, { key: keyName, value: str, allowed: data.difficulties.map((d) => d.name).join(", ") });
-        break;
-      }
-      case "cover": {
-        meta.cover = str;
+      case "path":
+        setMeta(meta, id, str);
         coverLocation = where;
         checkCover(str, where, add, options);
         break;
-      }
-      case "teaser": {
-        meta.teaser = str;
+      case "text":
+        setMeta(meta, id, str);
         checkTeaser(str, keyAt, add);
         break;
-      }
     }
   }
 
@@ -219,15 +206,15 @@ function checkCover(path: string, where: Location, add: (code: RuleCode, at: Loc
   }
   const dot = path.lastIndexOf(".");
   const ext = dot > path.lastIndexOf("/") && dot > path.lastIndexOf("\\") ? path.slice(dot + 1).toLowerCase() : "";
-  if (!data.coverExtensions.includes(ext)) {
-    add("fm-cover-ext", where, { ext: ext || "—", allowed: data.coverExtensions.join(", ") });
+  if (!COVER_EXTENSIONS.includes(ext)) {
+    add("fm-cover-ext", where, { ext: ext || "—", allowed: COVER_EXTENSIONS.join(", ") });
     return;
   }
   if (options.coverExists && !options.coverExists(path)) add("fm-cover-missing", where, { path });
 }
 
 function checkTeaser(text: string, where: Location, add: (code: RuleCode, at: Location, args?: Record<string, string>) => void): void {
-  const { teaserMin, teaserRecommendedMax, teaserMax } = data.limits;
+  const { teaserMin, teaserRecommendedMax, teaserMax } = LIMITS;
   const count = charLength(text);
   const args = { count: String(count), min: String(teaserMin), rec: String(teaserRecommendedMax), max: String(teaserMax) };
   if (count > teaserMax) add("fm-teaser-max", where, args);

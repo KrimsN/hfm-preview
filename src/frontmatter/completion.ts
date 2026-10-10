@@ -1,4 +1,4 @@
-import data from "../data/frontmatter.json";
+import { FIELDS, fieldByKey } from "./schema";
 
 export interface FrontmatterCompletion {
   label: string;
@@ -12,26 +12,8 @@ const KEY_LINE = /^([^\s#:-][^:]*)$/;
 const VALUE_LINE = /^([^\s#:-][^:]*):[ \t]*([^\s\]\[,]*)$/;
 const KEY_AT_START = /^([^\s#:-][^:]*):/;
 
-const fieldKeys = Object.values(data.fields);
-const BOOLEANS = [
-  { label: "true", detail: "Публикация является переводом" },
-  { label: "false", detail: "Оригинальная публикация" },
-];
-
 function valuesFor(key: string): { label: string; detail?: string }[] {
-  const id = fieldKeys.find((field) => field.key === key.trim());
-  switch (id?.key) {
-    case data.fields.format.key:
-      return data.formats.map((v) => ({ label: v.name, detail: v.description }));
-    case data.fields.difficulty.key:
-      return data.difficulties.map((v) => ({ label: v.name, detail: v.description }));
-    case data.fields.language.key:
-      return data.languages.map((label) => ({ label, detail: label === "ru" ? "Русский" : "Английский" }));
-    case data.fields.translation.key:
-      return BOOLEANS;
-    default:
-      return [];
-  }
+  return (fieldByKey(key.trim())?.options ?? []).map((option) => ({ label: option.name, detail: option.description }));
 }
 
 /** Ключи, уже записанные в блоке (строки вида `Ключ: …` без отступа). */
@@ -55,7 +37,7 @@ export function frontmatterCompletions(
 ): { typed: number; items: FrontmatterCompletion[] } {
   if (linePrefix === "" || KEY_LINE.test(linePrefix)) {
     const typed = linePrefix.toLocaleLowerCase("ru");
-    const items = fieldKeys
+    const items = FIELDS
       .filter((field) => !present.has(field.key) && field.key.toLocaleLowerCase("ru").startsWith(typed))
       .map((field) => ({ label: field.key, detail: field.detail, insert: `${field.key}: `, kind: "key" as const }));
     return { typed: linePrefix.length, items };
