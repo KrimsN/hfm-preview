@@ -368,7 +368,7 @@
     "@types/vscode": "^1.90.0",
     "@vscode/vsce": "^4.0.0",
     "esbuild": "^0.28.2",
-    "markdown-it": "^15.0.2",
+    "markdown-it": "^15.0.3",
     "mathjax-full": "^3.2.2",
     "ovsx": "^1.2.0",
     "typescript": "^7.0.2",
